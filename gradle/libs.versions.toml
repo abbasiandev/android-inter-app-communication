@@ -14,6 +14,7 @@ composeCompiler = "1.5.15"
 lifecycle = "2.8.7"
 activity = "1.9.3"
 hilt = "2.52"
+koin = "3.5.0"
 room = "2.6.1"
 sqlcipher = "4.5.4"
 sqlite = "2.4.0"
@@ -59,6 +60,12 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-navigation = { group = "io.insert-koin", name = "koin-androidx-navigation", version.ref = "koin" }
+koin-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+koin-junit = { group = "io.insert-koin", name = "koin-test-junit4", version.ref = "koin" }
 
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }

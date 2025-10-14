@@ -9,6 +9,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/internet-app" />
+            <option value="$PROJECT_DIR$/internet-app/app" />
             <option value="$PROJECT_DIR$/location-app" />
             <option value="$PROJECT_DIR$/location-app/app" />
             <option value="$PROJECT_DIR$/shared" />
