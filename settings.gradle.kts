@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "mahdiAbbasainMohamadiAndroidCodeChallenge"
+
+include(":shared:protocol")
