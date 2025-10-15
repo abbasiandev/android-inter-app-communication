@@ -15,12 +15,6 @@ data class LocationEntity(
     @ColumnInfo(name = "encrypted_longitude", typeAffinity = ColumnInfo.BLOB)
     val encryptedLongitude: ByteArray,
 
-    @ColumnInfo(name = "iv_latitude", typeAffinity = ColumnInfo.BLOB)
-    val ivLatitude: ByteArray,
-
-    @ColumnInfo(name = "iv_longitude", typeAffinity = ColumnInfo.BLOB)
-    val ivLongitude: ByteArray,
-
     @ColumnInfo(name = "accuracy")
     val accuracy: Float,
 
@@ -35,10 +29,15 @@ data class LocationEntity(
         if (javaClass != other?.javaClass) return false
         other as LocationEntity
         if (id != other.id) return false
+        if (!encryptedLatitude.contentEquals(other.encryptedLatitude)) return false
+        if (!encryptedLongitude.contentEquals(other.encryptedLongitude)) return false
         return true
     }
 
     override fun hashCode(): Int {
-        return id.hashCode()
+        var result = id.hashCode()
+        result = 31 * result + encryptedLatitude.contentHashCode()
+        result = 31 * result + encryptedLongitude.contentHashCode()
+        return result
     }
 }
