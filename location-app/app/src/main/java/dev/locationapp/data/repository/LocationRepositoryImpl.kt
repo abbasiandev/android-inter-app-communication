@@ -46,6 +46,8 @@ class LocationRepositoryImpl @Inject constructor(
             id = location.id,
             encryptedLatitude = encryptedLat.data,
             encryptedLongitude = encryptedLon.data,
+            ivLatitude = encryptedLat.iv,
+            ivLongitude = encryptedLon.iv,
             accuracy = location.accuracy,
             timestamp = location.timestamp,
             provider = location.provider
@@ -54,11 +56,11 @@ class LocationRepositoryImpl @Inject constructor(
 
     private fun decryptLocation(entity: LocationEntity): LocationData {
         val latitude = cryptoManager.decrypt(
-            EncryptedData(entity.encryptedLatitude)
+            EncryptedData(entity.encryptedLatitude, entity.ivLatitude)
         ).toDouble()
 
         val longitude = cryptoManager.decrypt(
-            EncryptedData(entity.encryptedLongitude)
+            EncryptedData(entity.encryptedLongitude, entity.ivLongitude)
         ).toDouble()
 
         return LocationData(
