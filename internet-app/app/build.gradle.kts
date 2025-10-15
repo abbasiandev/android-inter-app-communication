@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
-    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -53,10 +52,7 @@ dependencies {
 
     // Android Core
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.swiperefreshlayout)
 
     // Compose BOM
     val composeBom = platform(libs.compose.bom)
@@ -67,6 +63,10 @@ dependencies {
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.material.icons.extended)
+    debugImplementation(libs.compose.ui.tooling)
+
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
