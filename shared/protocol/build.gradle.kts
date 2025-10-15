@@ -1,13 +1,12 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.library")
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
     id("kotlin-parcelize")
 }
 
 android {
     namespace = "dev.abbasian.protocol"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26

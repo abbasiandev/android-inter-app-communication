@@ -2,4 +2,21 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+}
+
+tasks.register("verifySharedModule") {
+    doLast {
+        val sharedDir = file("shared/protocol/src/main/kotlin")
+        println("Shared module location: ${sharedDir.absolutePath}")
+        println("Shared module exists: ${sharedDir.exists()}")
+
+        val kotlinFiles = sharedDir.walk()
+            .filter { it.extension == "kt" }
+            .map { it.name }
+            .toList()
+
+        println("Kotlin files found: ${kotlinFiles.size}")
+        kotlinFiles.forEach { println("  - $it") }
+    }
 }
