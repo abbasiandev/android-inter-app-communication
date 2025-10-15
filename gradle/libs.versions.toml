@@ -36,8 +36,8 @@ androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "s
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
