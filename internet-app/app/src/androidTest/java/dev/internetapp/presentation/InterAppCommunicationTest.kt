@@ -16,7 +16,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class InterAppCommunicationTest {
-
     private lateinit var context: Context
     private lateinit var contentResolver: ContentResolver
     private lateinit var repository: CommandRepositoryImpl
@@ -29,19 +28,21 @@ class InterAppCommunicationTest {
     }
 
     @Test
-    fun `sendStartServiceCommandAndReceiveSuccessResponse`() = runTest {
-        val response = repository.sendCommand(LocationCommand.StartService)
+    fun `sendStartServiceCommandAndReceiveSuccessResponse`() =
+        runTest {
+            val response = repository.sendCommand(LocationCommand.StartService)
 
-        Assert.assertTrue(response is LocationResponse.Success || response is LocationResponse.Error)
-    }
+            Assert.assertTrue(response is LocationResponse.Success || response is LocationResponse.Error)
+        }
 
     @Test
-    fun `sendGetLocationsCommandReturnsLocationList`() = runTest {
-        val response = repository.sendCommand(LocationCommand.GetAllLocations)
+    fun `sendGetLocationsCommandReturnsLocationList`() =
+        runTest {
+            val response = repository.sendCommand(LocationCommand.GetAllLocations)
 
-        Assert.assertTrue(
-            response is LocationResponse.LocationList ||
-                    response is LocationResponse.Error
-        )
-    }
+            Assert.assertTrue(
+                response is LocationResponse.LocationList ||
+                    response is LocationResponse.Error,
+            )
+        }
 }

@@ -55,47 +55,48 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.abbasian.protocol.AppLogger
 import dev.abbasian.protocol.LocationData
 import dev.locationapp.feature.location.LocationCollectionService
-import dev.locationapp.presentation.ui.theme.LocationAppTheme
+import dev.locationapp.presentation.ui.theme.locationAppTheme
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @Inject
     lateinit var logger: AppLogger
 
     private val viewModel: LocationListViewModel by viewModels()
 
-    private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        when {
-            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                logger.i(TAG, "Fine location permission granted")
-                startLocationService()
-            }
+    private val locationPermissionRequest =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions(),
+        ) { permissions ->
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    logger.i(TAG, "Fine location permission granted")
+                    startLocationService()
+                }
 
-            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                logger.i(TAG, "Coarse location permission granted")
-                startLocationService()
-            }
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    logger.i(TAG, "Coarse location permission granted")
+                    startLocationService()
+                }
 
-            else -> {
-                logger.w(TAG, "Location permission denied")
-                Toast.makeText(this, "Location permission required", Toast.LENGTH_LONG).show()
+                else -> {
+                    logger.w(TAG, "Location permission denied")
+                    Toast.makeText(this, "Location permission required", Toast.LENGTH_LONG).show()
+                }
             }
         }
-    }
 
-    private val notificationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            logger.i(TAG, "Notification permission granted")
-        } else {
-            logger.w(TAG, "Notification permission denied")
+    private val notificationPermissionRequest =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { isGranted ->
+            if (isGranted) {
+                logger.i(TAG, "Notification permission granted")
+            } else {
+                logger.w(TAG, "Notification permission denied")
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,8 +105,8 @@ class MainActivity : ComponentActivity() {
         checkPermissions()
 
         setContent {
-            LocationAppTheme {
-                MainContent()
+            locationAppTheme {
+                mainContent()
             }
         }
     }
@@ -114,7 +115,7 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
-                    Manifest.permission.POST_NOTIFICATIONS
+                    Manifest.permission.POST_NOTIFICATIONS,
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -126,7 +127,7 @@ class MainActivity : ComponentActivity() {
         when {
             ContextCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
             ) == PackageManager.PERMISSION_GRANTED -> {
                 onGranted()
             }
@@ -135,17 +136,18 @@ class MainActivity : ComponentActivity() {
                 locationPermissionRequest.launch(
                     arrayOf(
                         Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ),
                 )
             }
         }
     }
 
     private fun startLocationService() {
-        val intent = Intent(this, LocationCollectionService::class.java).apply {
-            action = LocationCollectionService.ACTION_START_COLLECTION
-        }
+        val intent =
+            Intent(this, LocationCollectionService::class.java).apply {
+                action = LocationCollectionService.ACTION_START_COLLECTION
+            }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
@@ -158,9 +160,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun stopLocationService() {
-        val intent = Intent(this, LocationCollectionService::class.java).apply {
-            action = LocationCollectionService.ACTION_STOP_COLLECTION
-        }
+        val intent =
+            Intent(this, LocationCollectionService::class.java).apply {
+                action = LocationCollectionService.ACTION_STOP_COLLECTION
+            }
         startService(intent)
 
         Toast.makeText(this, "Location service stopped", Toast.LENGTH_SHORT).show()
@@ -168,7 +171,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun MainContent() {
+    private fun mainContent() {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         LaunchedEffect(uiState.error) {
@@ -178,7 +181,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        LocationScreen(
+        locationScreen(
             state = uiState,
             onStartService = {
                 logger.d(TAG, "Start service button clicked")
@@ -193,7 +196,7 @@ class MainActivity : ComponentActivity() {
             onRefresh = {
                 logger.d(TAG, "Refresh triggered")
                 viewModel.refresh()
-            }
+            },
         )
     }
 
@@ -204,77 +207,80 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LocationScreen(
+fun locationScreen(
     state: LocationListState,
     onStartService: () -> Unit,
     onStopService: () -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Location App") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             Text(
                 text = "Locations: ${state.locationCount}",
                 modifier = Modifier.padding(16.dp),
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
 
             PullToRefreshBox(
                 isRefreshing = state.isLoading,
                 onRefresh = onRefresh,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 if (state.locations.isEmpty() && !state.isLoading) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = "No locations collected yet.\nStart the service to begin tracking.",
                             textAlign = TextAlign.Center,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
                         )
                     }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(8.dp)
+                        contentPadding = PaddingValues(8.dp),
                     ) {
                         items(state.locations) { location ->
-                            LocationItem(location = location)
+                            locationItem(location = location)
                         }
                     }
                 }
             }
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Button(
                     onClick = onStartService,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Start Service")
@@ -282,12 +288,12 @@ fun LocationScreen(
 
                 OutlinedButton(
                     onClick = onStopService,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Stop,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Stop Service")
@@ -298,68 +304,71 @@ fun LocationScreen(
 }
 
 @Composable
-fun LocationItem(location: LocationData) {
+fun locationItem(location: LocationData) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         ) {
             Text(
                 text = location.getCoordinatesString(),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = location.getFormattedDate(),
-                fontSize = 14.sp
+                fontSize = 14.sp,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
                     text = "Accuracy: ${location.accuracy}m",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
 
                 Text(
                     text = "Provider: ${location.provider}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             }
 
             Spacer(modifier = Modifier.height(4.dp))
 
             val age = location.getAge()
-            val ageText = when {
-                age < 60_000 -> "Just now"
-                age < 3600_000 -> "${age / 60_000}m ago"
-                age < 86400_000 -> "${age / 3600_000}h ago"
-                else -> "${age / 86400_000}d ago"
-            }
+            val ageText =
+                when {
+                    age < 60_000 -> "Just now"
+                    age < 3600_000 -> "${age / 60_000}m ago"
+                    age < 86400_000 -> "${age / 3600_000}h ago"
+                    else -> "${age / 86400_000}d ago"
+                }
 
             Text(
                 text = ageText,
                 fontSize = 12.sp,
                 fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             )
         }
     }

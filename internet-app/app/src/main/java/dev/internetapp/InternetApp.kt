@@ -9,7 +9,6 @@ import org.koin.core.logger.Level
 import timber.log.Timber
 
 class InternetApp : Application() {
-
     override fun onCreate() {
         super.onCreate()
 

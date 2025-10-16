@@ -6,7 +6,6 @@ package dev.abbasian.protocol
  * Each one has its own type string so we can serialize/deserialize properly.
  */
 sealed class LocationCommand(val type: String) {
-
     /**
      * Tells Location App to fire up the location collection service
      */
@@ -48,13 +47,14 @@ sealed class LocationCommand(val type: String) {
          * @return The matching LocationCommand
          * @throws IllegalArgumentException when the type doesn't match anything we know
          */
-        fun fromString(type: String): LocationCommand = when (type) {
-            TYPE_START_SERVICE -> StartService
-            TYPE_STOP_SERVICE -> StopService
-            TYPE_GET_ALL_LOCATIONS -> GetAllLocations
-            TYPE_GET_LATEST_LOCATION -> GetLatestLocation
-            else -> throw IllegalArgumentException("Unknown command type: $type")
-        }
+        fun fromString(type: String): LocationCommand =
+            when (type) {
+                TYPE_START_SERVICE -> StartService
+                TYPE_STOP_SERVICE -> StopService
+                TYPE_GET_ALL_LOCATIONS -> GetAllLocations
+                TYPE_GET_LATEST_LOCATION -> GetLatestLocation
+                else -> throw IllegalArgumentException("Unknown command type: $type")
+            }
 
         /**
          * Same as fromString but returns null instead of crashing on bad input.
@@ -62,31 +62,32 @@ sealed class LocationCommand(val type: String) {
          * @param type The string identifier (can be null)
          * @return The matching command, or null if it doesn't match anything
          */
-        fun fromStringOrNull(type: String?): LocationCommand? = when (type) {
-            TYPE_START_SERVICE -> StartService
-            TYPE_STOP_SERVICE -> StopService
-            TYPE_GET_ALL_LOCATIONS -> GetAllLocations
-            TYPE_GET_LATEST_LOCATION -> GetLatestLocation
-            else -> null
-        }
+        fun fromStringOrNull(type: String?): LocationCommand? =
+            when (type) {
+                TYPE_START_SERVICE -> StartService
+                TYPE_STOP_SERVICE -> StopService
+                TYPE_GET_ALL_LOCATIONS -> GetAllLocations
+                TYPE_GET_LATEST_LOCATION -> GetLatestLocation
+                else -> null
+            }
 
         /**
          * Gives you a list of every command type we support
          * @return All valid command type strings
          */
-        fun getAllTypes(): List<String> = listOf(
-            TYPE_START_SERVICE,
-            TYPE_STOP_SERVICE,
-            TYPE_GET_ALL_LOCATIONS,
-            TYPE_GET_LATEST_LOCATION
-        )
+        fun getAllTypes(): List<String> =
+            listOf(
+                TYPE_START_SERVICE,
+                TYPE_STOP_SERVICE,
+                TYPE_GET_ALL_LOCATIONS,
+                TYPE_GET_LATEST_LOCATION,
+            )
 
         /**
          * Quick check to see if a type string is actually valid
          * @param type The string to check
          * @return true if it's a legit command type
          */
-        fun isValidType(type: String?): Boolean =
-            type != null && getAllTypes().contains(type)
+        fun isValidType(type: String?): Boolean = type != null && getAllTypes().contains(type)
     }
 }

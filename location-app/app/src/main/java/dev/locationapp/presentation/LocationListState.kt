@@ -7,5 +7,5 @@ data class LocationListState(
     val isLoading: Boolean = true,
     val isServiceRunning: Boolean = false,
     val error: String? = null,
-    val locationCount: Int = 0
+    val locationCount: Int = 0,
 )

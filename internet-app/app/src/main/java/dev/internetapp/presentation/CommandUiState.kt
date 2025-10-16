@@ -8,11 +8,11 @@ data class CommandUiState(
     val locations: List<LocationData> = emptyList(),
     val latestLocation: LocationData? = null,
     val error: String? = null,
-    val serviceStatus: ServiceStatus = ServiceStatus.UNKNOWN
+    val serviceStatus: ServiceStatus = ServiceStatus.UNKNOWN,
 )
 
 enum class ServiceStatus {
     UNKNOWN,
     RUNNING,
-    STOPPED
+    STOPPED,
 }

@@ -36,7 +36,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class LocationCollectionService : Service() {
-
     @Inject
     lateinit var saveLocationUseCase: SaveLocationUseCase
 
@@ -58,7 +57,11 @@ class LocationCollectionService : Service() {
         createNotificationChannel()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         logger.i(TAG, "Service started with intent: ${intent?.action}")
 
         when (intent?.action) {
@@ -100,24 +103,25 @@ class LocationCollectionService : Service() {
     }
 
     private fun setupLocationCallback() {
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                locationResult.lastLocation?.let { location ->
-                    logger.d(TAG, "Location received: ${location.latitude}, ${location.longitude}")
-                    saveLocation(location)
+        locationCallback =
+            object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    locationResult.lastLocation?.let { location ->
+                        logger.d(TAG, "Location received: ${location.latitude}, ${location.longitude}")
+                        saveLocation(location)
+                    }
+                }
+
+                override fun onLocationAvailability(availability: LocationAvailability) {
+                    logger.d(TAG, "Location availability: ${availability.isLocationAvailable}")
                 }
             }
-
-            override fun onLocationAvailability(availability: LocationAvailability) {
-                logger.d(TAG, "Location availability: ${availability.isLocationAvailable}")
-            }
-        }
     }
 
     private fun startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             logger.e(TAG, "Location permission not granted")
@@ -125,19 +129,20 @@ class LocationCollectionService : Service() {
             return
         }
 
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS
-        ).apply {
-            setMinUpdateIntervalMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS)
-            setWaitForAccurateLocation(false)
-            setMaxUpdateDelayMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS * 2)
-        }.build()
+        val locationRequest =
+            LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS,
+            ).apply {
+                setMinUpdateIntervalMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS)
+                setWaitForAccurateLocation(false)
+                setMaxUpdateDelayMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS * 2)
+            }.build()
 
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
-            null
+            null,
         ).addOnSuccessListener {
             logger.i(TAG, "Location updates started successfully")
         }.addOnFailureListener { exception ->
@@ -153,14 +158,15 @@ class LocationCollectionService : Service() {
     private fun saveLocation(location: Location) {
         serviceScope.launch {
             try {
-                val locationData = LocationData(
-                    id = UUID.randomUUID().toString(),
-                    latitude = location.latitude,
-                    longitude = location.longitude,
-                    accuracy = location.accuracy,
-                    timestamp = location.time,
-                    provider = location.provider ?: "unknown"
-                )
+                val locationData =
+                    LocationData(
+                        id = UUID.randomUUID().toString(),
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        accuracy = location.accuracy,
+                        timestamp = location.time,
+                        provider = location.provider ?: "unknown",
+                    )
 
                 saveLocationUseCase(locationData)
                 logger.d(TAG, "Location saved successfully")
@@ -172,14 +178,15 @@ class LocationCollectionService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Location Collection",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Notification for location collection service"
-                setShowBadge(false)
-            }
+            val channel =
+                NotificationChannel(
+                    CHANNEL_ID,
+                    "Location Collection",
+                    NotificationManager.IMPORTANCE_LOW,
+                ).apply {
+                    description = "Notification for location collection service"
+                    setShowBadge(false)
+                }
 
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
@@ -188,16 +195,18 @@ class LocationCollectionService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val stopIntent = Intent(this, LocationCollectionService::class.java).apply {
-            action = ACTION_STOP_COLLECTION
-        }
+        val stopIntent =
+            Intent(this, LocationCollectionService::class.java).apply {
+                action = ACTION_STOP_COLLECTION
+            }
 
-        val stopPendingIntent = PendingIntent.getService(
-            this,
-            0,
-            stopIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val stopPendingIntent =
+            PendingIntent.getService(
+                this,
+                0,
+                stopIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Location Collection Active")
@@ -208,7 +217,7 @@ class LocationCollectionService : Service() {
             .addAction(
                 R.drawable.ic_menu_close_clear_cancel,
                 "Stop",
-                stopPendingIntent
+                stopPendingIntent,
             )
             .build()
     }
