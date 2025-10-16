@@ -90,7 +90,7 @@ jobs:
 
   instrumentation-tests:
     name: Run Instrumentation Tests
-    runs-on: macos-latest
+    runs-on: macos-13
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -113,6 +113,13 @@ jobs:
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Free Disk Space
+        run: |
+          df -h
+          sudo rm -rf /Users/runner/Library/Android/sdk/ndk
+          sudo rm -rf /Users/runner/Library/Android/sdk/ndk-bundle
+          df -h
+
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -120,47 +127,74 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-macos-${{ matrix.api-level }}-v3
+          key: avd-macos-13-${{ matrix.api-level }}-v4
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
-        timeout-minutes: 20
+        timeout-minutes: 25
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: default
           arch: x86_64
           profile: Nexus 6
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 8192M
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot-load
           disable-animations: true
+          enable-hw-keyboard: true
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run Instrumentation Tests - Location App
         uses: reactivecircus/android-emulator-runner@v2
-        timeout-minutes: 20
+        timeout-minutes: 25
+        continue-on-error: false
         with:
           api-level: ${{ matrix.api-level }}
           target: default
           arch: x86_64
           profile: Nexus 6
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 8192M
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot-save
           disable-animations: true
-          script: ./gradlew :location-app:app:connectedDebugAndroidTest --stacktrace
+          enable-hw-keyboard: true
+          emulator-boot-timeout: 600
+          script: |
+            adb devices
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+            ./gradlew :location-app:app:connectedDebugAndroidTest --stacktrace --info
 
       - name: Run Instrumentation Tests - Internet App
+        if: success() || failure()
         uses: reactivecircus/android-emulator-runner@v2
-        timeout-minutes: 20
+        timeout-minutes: 25
+        continue-on-error: false
         with:
           api-level: ${{ matrix.api-level }}
           target: default
           arch: x86_64
           profile: Nexus 6
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 8192M
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot-save
           disable-animations: true
-          script: ./gradlew :internet-app:app:connectedDebugAndroidTest --stacktrace
+          enable-hw-keyboard: true
+          emulator-boot-timeout: 600
+          script: |
+            adb devices
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+            ./gradlew :internet-app:app:connectedDebugAndroidTest --stacktrace --info
 
       - name: Upload Instrumentation Test Reports
         if: always()
