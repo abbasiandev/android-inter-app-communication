@@ -73,9 +73,7 @@ class LocationCollectionService : Service() {
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
+    override fun onBind(intent: Intent?): IBinder? = null
 
     private fun startLocationCollection() {
         if (isCollecting) {
@@ -130,24 +128,26 @@ class LocationCollectionService : Service() {
         }
 
         val locationRequest =
-            LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS,
-            ).apply {
-                setMinUpdateIntervalMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS)
-                setWaitForAccurateLocation(false)
-                setMaxUpdateDelayMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS * 2)
-            }.build()
+            LocationRequest
+                .Builder(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS,
+                ).apply {
+                    setMinUpdateIntervalMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS)
+                    setWaitForAccurateLocation(false)
+                    setMaxUpdateDelayMillis(ProtocolConstants.LOCATION_UPDATE_INTERVAL_MS * 2)
+                }.build()
 
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            null,
-        ).addOnSuccessListener {
-            logger.i(TAG, "Location updates started successfully")
-        }.addOnFailureListener { exception ->
-            logger.e(TAG, "Failed to start location updates: ${exception.message}")
-        }
+        fusedLocationClient
+            .requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                null,
+            ).addOnSuccessListener {
+                logger.i(TAG, "Location updates started successfully")
+            }.addOnFailureListener { exception ->
+                logger.e(TAG, "Failed to start location updates: ${exception.message}")
+            }
     }
 
     private fun stopLocationUpdates() {
@@ -170,7 +170,9 @@ class LocationCollectionService : Service() {
 
                 saveLocationUseCase(locationData)
                 logger.d(TAG, "Location saved successfully")
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
+                logger.e(TAG, "Invalid location data: ${e.message}")
+            } catch (e: IllegalStateException) {
                 logger.e(TAG, "Error saving location: ${e.message}")
             }
         }
@@ -208,7 +210,8 @@ class LocationCollectionService : Service() {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat
+            .Builder(this, CHANNEL_ID)
             .setContentTitle("Location Collection Active")
             .setContentText("Collecting location data in background")
             .setSmallIcon(R.drawable.ic_menu_mylocation)
@@ -218,8 +221,7 @@ class LocationCollectionService : Service() {
                 R.drawable.ic_menu_close_clear_cancel,
                 "Stop",
                 stopPendingIntent,
-            )
-            .build()
+            ).build()
     }
 
     override fun onDestroy() {
