@@ -22,9 +22,8 @@ class CommandViewModel(
     private val stopServiceUseCase: StopServiceUseCase,
     private val getAllLocationsUseCase: GetAllLocationsUseCase,
     private val getLatestLocationUseCase: GetLatestLocationUseCase,
-    private val logger: AppLogger
+    private val logger: AppLogger,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(CommandUiState())
     val uiState: StateFlow<CommandUiState> = _uiState.asStateFlow()
 
@@ -54,19 +53,23 @@ class CommandViewModel(
             when (val response = startServiceUseCase()) {
                 is LocationResponse.Success -> {
                     logger.i(TAG, "Service started: ${response.message}")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        lastResponse = response.message,
-                        serviceStatus = ServiceStatus.RUNNING
-                    )}
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            lastResponse = response.message,
+                            serviceStatus = ServiceStatus.RUNNING,
+                        )
+                    }
                     _effect.send(CommandEffect.ShowSuccess("Service started successfully"))
                 }
                 is LocationResponse.Error -> {
                     logger.e(TAG, "Failed to start service: ${response.message}")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        error = response.message
-                    )}
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = response.message,
+                        )
+                    }
                     _effect.send(CommandEffect.ShowError(response.message))
                 }
                 else -> {
@@ -83,19 +86,23 @@ class CommandViewModel(
             when (val response = stopServiceUseCase()) {
                 is LocationResponse.Success -> {
                     logger.i(TAG, "Service stopped: ${response.message}")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        lastResponse = response.message,
-                        serviceStatus = ServiceStatus.STOPPED
-                    )}
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            lastResponse = response.message,
+                            serviceStatus = ServiceStatus.STOPPED,
+                        )
+                    }
                     _effect.send(CommandEffect.ShowSuccess("Service stopped successfully"))
                 }
                 is LocationResponse.Error -> {
                     logger.e(TAG, "Failed to stop service: ${response.message}")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        error = response.message
-                    )}
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = response.message,
+                        )
+                    }
                     _effect.send(CommandEffect.ShowError(response.message))
                 }
                 else -> {
@@ -112,22 +119,28 @@ class CommandViewModel(
             when (val response = getAllLocationsUseCase()) {
                 is LocationResponse.LocationList -> {
                     logger.i(TAG, "Received ${response.locations.size} locations")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        locations = response.locations,
-                        lastResponse = "Retrieved ${response.locations.size} locations"
-                    )}
-                    _effect.send(CommandEffect.ShowToast(
-                        "Retrieved ${response.locations.size} locations"
-                    ))
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            locations = response.locations,
+                            lastResponse = "Retrieved ${response.locations.size} locations",
+                        )
+                    }
+                    _effect.send(
+                        CommandEffect.ShowToast(
+                            "Retrieved ${response.locations.size} locations",
+                        ),
+                    )
                 }
                 is LocationResponse.Error -> {
                     logger.w(TAG, "Failed to get locations: ${response.message}")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        error = response.message,
-                        locations = emptyList()
-                    )}
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = response.message,
+                            locations = emptyList(),
+                        )
+                    }
                     _effect.send(CommandEffect.ShowError(response.message))
                 }
                 else -> {
@@ -144,24 +157,29 @@ class CommandViewModel(
             when (val response = getLatestLocationUseCase()) {
                 is LocationResponse.SingleLocation -> {
                     logger.i(TAG, "Received latest location: ${response.location}")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        latestLocation = response.location,
-                        lastResponse = if (response.location != null) {
-                            "Latest: ${response.location!!.getCoordinatesString()}"
-                        } else {
-                            "No location available"
-                        }
-                    )}
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            latestLocation = response.location,
+                            lastResponse =
+                                if (response.location != null) {
+                                    "Latest: ${response.location!!.getCoordinatesString()}"
+                                } else {
+                                    "No location available"
+                                },
+                        )
+                    }
                     _effect.send(CommandEffect.ShowToast("Latest location retrieved"))
                 }
                 is LocationResponse.Error -> {
                     logger.w(TAG, "Failed to get latest location: ${response.message}")
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        error = response.message,
-                        latestLocation = null
-                    )}
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = response.message,
+                            latestLocation = null,
+                        )
+                    }
                     _effect.send(CommandEffect.ShowError(response.message))
                 }
                 else -> {
@@ -176,11 +194,13 @@ class CommandViewModel(
     }
 
     private fun clearResponse() {
-        _uiState.update { it.copy(
-            lastResponse = null,
-            locations = emptyList(),
-            latestLocation = null
-        )}
+        _uiState.update {
+            it.copy(
+                lastResponse = null,
+                locations = emptyList(),
+                latestLocation = null,
+            )
+        }
     }
 
     companion object {

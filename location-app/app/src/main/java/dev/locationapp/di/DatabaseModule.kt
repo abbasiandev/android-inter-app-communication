@@ -19,7 +19,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun provideCryptoManager(): CryptoManager {
@@ -30,17 +29,18 @@ object DatabaseModule {
     @Singleton
     fun provideLocationDatabase(
         @ApplicationContext context: Context,
-        cryptoManager: CryptoManager
+        cryptoManager: CryptoManager,
     ): LocationDatabase {
-        val passphrase = SQLiteDatabase.getBytes(
-            cryptoManager.getDatabasePassphrase().toCharArray()
-        )
+        val passphrase =
+            SQLiteDatabase.getBytes(
+                cryptoManager.getDatabasePassphrase().toCharArray(),
+            )
         val factory = SupportFactory(passphrase)
 
         return Room.databaseBuilder(
             context,
             LocationDatabase::class.java,
-            "location_database"
+            "location_database",
         )
             .openHelperFactory(factory)
             .fallbackToDestructiveMigration()
@@ -57,7 +57,7 @@ object DatabaseModule {
     @Singleton
     fun provideLocationRepository(
         locationDao: LocationDao,
-        cryptoManager: CryptoManager
+        cryptoManager: CryptoManager,
     ): LocationRepository {
         return LocationRepositoryImpl(locationDao, cryptoManager)
     }

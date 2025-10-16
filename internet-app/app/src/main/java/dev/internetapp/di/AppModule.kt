@@ -13,29 +13,30 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
-val appModule = module {
+val appModule =
+    module {
 
-    single<AppLogger> { TimberLogger() }
+        single<AppLogger> { TimberLogger() }
 
-    single<CommandRepository> {
-        CommandRepositoryImpl(
-            context = androidContext(),
-            logger = get()
-        )
+        single<CommandRepository> {
+            CommandRepositoryImpl(
+                context = androidContext(),
+                logger = get(),
+            )
+        }
+
+        factory { StartServiceUseCase(get(), get()) }
+        factory { StopServiceUseCase(get(), get()) }
+        factory { GetAllLocationsUseCase(get(), get()) }
+        factory { GetLatestLocationUseCase(get(), get()) }
+
+        viewModel {
+            CommandViewModel(
+                startServiceUseCase = get(),
+                stopServiceUseCase = get(),
+                getAllLocationsUseCase = get(),
+                getLatestLocationUseCase = get(),
+                logger = get(),
+            )
+        }
     }
-
-    factory { StartServiceUseCase(get(), get()) }
-    factory { StopServiceUseCase(get(), get()) }
-    factory { GetAllLocationsUseCase(get(), get()) }
-    factory { GetLatestLocationUseCase(get(), get()) }
-
-    viewModel {
-        CommandViewModel(
-            startServiceUseCase = get(),
-            stopServiceUseCase = get(),
-            getAllLocationsUseCase = get(),
-            getLatestLocationUseCase = get(),
-            logger = get()
-        )
-    }
-}

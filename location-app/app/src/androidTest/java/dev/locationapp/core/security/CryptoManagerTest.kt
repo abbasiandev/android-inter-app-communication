@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CryptoManagerTest {
-
     private lateinit var cryptoManager: CryptoManager
 
     @Before

@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocationDao {
-
     @Query("SELECT * FROM locations ORDER BY timestamp DESC")
     fun getAllLocations(): Flow<List<LocationEntity>>
 

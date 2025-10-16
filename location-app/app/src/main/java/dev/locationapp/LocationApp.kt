@@ -7,7 +7,6 @@ import timber.log.Timber
 
 @HiltAndroidApp
 class LocationApp : Application() {
-
     override fun onCreate() {
         super.onCreate()
 

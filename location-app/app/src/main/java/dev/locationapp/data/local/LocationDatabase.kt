@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [LocationEntity::class],
     version = 1,
-    exportSchema = false
+    exportSchema = false,
 )
 abstract class LocationDatabase : RoomDatabase() {
     abstract fun locationDao(): LocationDao
