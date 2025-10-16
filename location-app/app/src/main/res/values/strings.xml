@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Location App</string>
+    <string name="permission_label">Access Location Commands</string>
+    <string name="permission_description">Allows other apps to control location tracking</string>
+    <string name="notification_channel_name">Location Service</string>
+    <string name="notification_channel_description">Shows when location is being tracked</string>
+</resources>
