@@ -14,10 +14,9 @@ import javax.inject.Singleton
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [DatabaseModule::class, AppModule::class]
+    replaces = [DatabaseModule::class, AppModule::class],
 )
 object TestDatabaseModule {
-
     @Provides
     @Singleton
     fun provideCryptoManager(): CryptoManager {

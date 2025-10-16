@@ -5,7 +5,6 @@ package dev.abbasian.protocol
  * Both apps need to use the exact same values here or things won't work.
  */
 object ProtocolConstants {
-
     // ==================== ContentProvider ====================
 
     /** The authority string for Location App's ContentProvider */
@@ -91,11 +90,12 @@ object ProtocolConstants {
      * Checks if the response type is one of the recognized types
      */
     fun isValidResponseType(type: String?): Boolean {
-        return type in listOf(
-            RESPONSE_TYPE_SUCCESS,
-            RESPONSE_TYPE_LOCATION_LIST,
-            RESPONSE_TYPE_SINGLE_LOCATION,
-            RESPONSE_TYPE_ERROR
-        )
+        return type in
+            listOf(
+                RESPONSE_TYPE_SUCCESS,
+                RESPONSE_TYPE_LOCATION_LIST,
+                RESPONSE_TYPE_SINGLE_LOCATION,
+                RESPONSE_TYPE_ERROR,
+            )
     }
 }

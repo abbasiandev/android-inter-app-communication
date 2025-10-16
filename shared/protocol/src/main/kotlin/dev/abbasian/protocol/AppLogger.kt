@@ -10,14 +10,20 @@ interface AppLogger {
      * @param tag Usually the class name where you're logging from
      * @param message What you want to log
      */
-    fun d(tag: String, message: String)
+    fun d(
+        tag: String,
+        message: String,
+    )
 
     /**
      * Logs an informational message
      * @param tag Identifies where the log is coming from
      * @param message What you want to log
      */
-    fun i(tag: String, message: String)
+    fun i(
+        tag: String,
+        message: String,
+    )
 
     /**
      * Logs a warning - something not quite right but not critical
@@ -25,7 +31,11 @@ interface AppLogger {
      * @param message Description of the warning
      * @param throwable Any exception that might be related
      */
-    fun w(tag: String, message: String, throwable: Throwable? = null)
+    fun w(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    )
 
     /**
      * Logs an error - something actually went wrong
@@ -33,7 +43,11 @@ interface AppLogger {
      * @param message What went wrong
      * @param throwable The exception if there is one
      */
-    fun e(tag: String, message: String, throwable: Throwable? = null)
+    fun e(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    )
 }
 
 /**
@@ -41,16 +55,25 @@ interface AppLogger {
  * Remember to call Timber.plant() in your Application.onCreate() or this won't work.
  */
 class TimberLogger : AppLogger {
-
-    override fun d(tag: String, message: String) {
+    override fun d(
+        tag: String,
+        message: String,
+    ) {
         timber.log.Timber.tag(tag).d(message)
     }
 
-    override fun i(tag: String, message: String) {
+    override fun i(
+        tag: String,
+        message: String,
+    ) {
         timber.log.Timber.tag(tag).i(message)
     }
 
-    override fun w(tag: String, message: String, throwable: Throwable?) {
+    override fun w(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) {
         if (throwable != null) {
             timber.log.Timber.tag(tag).w(throwable, message)
         } else {
@@ -58,7 +81,11 @@ class TimberLogger : AppLogger {
         }
     }
 
-    override fun e(tag: String, message: String, throwable: Throwable?) {
+    override fun e(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) {
         if (throwable != null) {
             timber.log.Timber.tag(tag).e(throwable, message)
         } else {
@@ -72,21 +99,34 @@ class TimberLogger : AppLogger {
  * Handy for unit tests where you don't want to deal with Timber setup.
  */
 class ConsoleLogger : AppLogger {
-
-    override fun d(tag: String, message: String) {
+    override fun d(
+        tag: String,
+        message: String,
+    ) {
         println("DEBUG [$tag]: $message")
     }
 
-    override fun i(tag: String, message: String) {
+    override fun i(
+        tag: String,
+        message: String,
+    ) {
         println("INFO [$tag]: $message")
     }
 
-    override fun w(tag: String, message: String, throwable: Throwable?) {
+    override fun w(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) {
         println("WARN [$tag]: $message")
         throwable?.printStackTrace()
     }
 
-    override fun e(tag: String, message: String, throwable: Throwable?) {
+    override fun e(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) {
         System.err.println("ERROR [$tag]: $message")
         throwable?.printStackTrace()
     }

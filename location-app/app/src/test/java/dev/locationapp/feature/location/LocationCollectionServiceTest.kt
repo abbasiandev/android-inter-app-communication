@@ -36,11 +36,10 @@ import javax.inject.Inject
 @RunWith(AndroidJUnit4::class)
 @Config(
     sdk = [33],
-    application = HiltTestApplication::class
+    application = HiltTestApplication::class,
 )
 @OptIn(ExperimentalCoroutinesApi::class)
 class LocationCollectionServiceTest {
-
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
@@ -61,7 +60,7 @@ class LocationCollectionServiceTest {
 
         shadowApplication.grantPermissions(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION,
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -76,9 +75,10 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `service starts successfully`() {
-        val service = Robolectric.buildService(LocationCollectionService::class.java)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java)
+                .create()
+                .get()
 
         assertNotNull(service)
         assertNotNull(service.logger)
@@ -87,13 +87,15 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onCreate creates notification channel`() {
-        val service = Robolectric.buildService(LocationCollectionService::class.java)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java)
+                .create()
+                .get()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager = ApplicationProvider.getApplicationContext<Context>()
-                .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                ApplicationProvider.getApplicationContext<Context>()
+                    .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             val channel = notificationManager.getNotificationChannel("location_collection_channel")
             assertNotNull(channel)
@@ -103,14 +105,16 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onStartCommand with no action starts collection`() {
-        val intent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
+        val intent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
 
-        val service = Robolectric.buildService(LocationCollectionService::class.java, intent)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java, intent)
+                .create()
+                .get()
 
         val result = service.onStartCommand(intent, 0, 1)
 
@@ -119,15 +123,17 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onStartCommand with ACTION_START_COLLECTION starts collection`() {
-        val intent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
-            .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
+        val intent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
+                .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
 
-        val service = Robolectric.buildService(LocationCollectionService::class.java, intent)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java, intent)
+                .create()
+                .get()
 
         val result = service.onStartCommand(intent, 0, 1)
 
@@ -136,23 +142,26 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onStartCommand with ACTION_STOP_COLLECTION stops collection`() {
-        val startIntent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
-            .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
+        val startIntent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
+                .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
 
-        val service = Robolectric.buildService(LocationCollectionService::class.java, startIntent)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java, startIntent)
+                .create()
+                .get()
 
         service.onStartCommand(startIntent, 0, 1)
 
-        val stopIntent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
-            .apply { action = LocationCollectionService.ACTION_STOP_COLLECTION }
+        val stopIntent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
+                .apply { action = LocationCollectionService.ACTION_STOP_COLLECTION }
 
         val result = service.onStartCommand(stopIntent, 0, 2)
 
@@ -161,15 +170,17 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `stopLocationCollection stops service`() {
-        val intent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
-            .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
+        val intent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
+                .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
 
-        val service = Robolectric.buildService(LocationCollectionService::class.java, intent)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java, intent)
+                .create()
+                .get()
 
         service.onStartCommand(intent, 0, 1)
 
@@ -178,9 +189,10 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onBind returns null`() {
-        val service = Robolectric.buildService(LocationCollectionService::class.java)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java)
+                .create()
+                .get()
 
         val binder = service.onBind(null)
 
@@ -191,15 +203,17 @@ class LocationCollectionServiceTest {
     fun `service without location permission stops itself`() {
         shadowApplication.denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
-        val intent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
-            .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
+        val intent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
+                .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
 
-        val service = Robolectric.buildService(LocationCollectionService::class.java, intent)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java, intent)
+                .create()
+                .get()
 
         service.onStartCommand(intent, 0, 1)
 
@@ -208,10 +222,11 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `service lifecycle completes successfully`() {
-        val intent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
+        val intent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
 
         Robolectric.buildService(LocationCollectionService::class.java, intent)
             .create()
@@ -221,9 +236,10 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onDestroy cleans up resources`() {
-        val service = Robolectric.buildService(LocationCollectionService::class.java)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java)
+                .create()
+                .get()
 
         Robolectric.buildService(LocationCollectionService::class.java)
             .create()
@@ -235,15 +251,17 @@ class LocationCollectionServiceTest {
     @Test
     fun `starting collection twice logs warning`() {
         clearMocks(logger)
-        val intent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
-            .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
+        val intent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
+                .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
 
-        val service = Robolectric.buildService(LocationCollectionService::class.java, intent)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java, intent)
+                .create()
+                .get()
 
         service.onStartCommand(intent, 0, 1)
         service.onStartCommand(intent, 0, 2)
@@ -254,9 +272,10 @@ class LocationCollectionServiceTest {
     @Test
     fun `stopping collection when not running logs warning`() {
         clearMocks(logger)
-        val service = Robolectric.buildService(LocationCollectionService::class.java)
-            .create()
-            .get()
+        val service =
+            Robolectric.buildService(LocationCollectionService::class.java)
+                .create()
+                .get()
 
         service.stopLocationCollection()
 
@@ -265,21 +284,23 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `notification has correct properties`() {
-        val intent = Intent(
-            ApplicationProvider.getApplicationContext(),
-            LocationCollectionService::class.java
-        )
-            .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
+        val intent =
+            Intent(
+                ApplicationProvider.getApplicationContext(),
+                LocationCollectionService::class.java,
+            )
+                .apply { action = LocationCollectionService.ACTION_START_COLLECTION }
 
         Robolectric.buildService(LocationCollectionService::class.java, intent)
             .create()
             .startCommand(0, 1)
 
-        val shadowNotificationManager = shadowOf(
-            ApplicationProvider.getApplicationContext<Context>()
-                .getSystemService(Context.NOTIFICATION_SERVICE)
-                    as NotificationManager
-        )
+        val shadowNotificationManager =
+            shadowOf(
+                ApplicationProvider.getApplicationContext<Context>()
+                    .getSystemService(Context.NOTIFICATION_SERVICE)
+                    as NotificationManager,
+            )
 
         val notifications = shadowNotificationManager.allNotifications
         assertTrue(notifications.isNotEmpty())
@@ -290,9 +311,13 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `service constants are correct`() {
-        assertEquals("dev.locationapp.ACTION_START_COLLECTION",
-            LocationCollectionService.ACTION_START_COLLECTION)
-        assertEquals("dev.locationapp.ACTION_STOP_COLLECTION",
-            LocationCollectionService.ACTION_STOP_COLLECTION)
+        assertEquals(
+            "dev.locationapp.ACTION_START_COLLECTION",
+            LocationCollectionService.ACTION_START_COLLECTION,
+        )
+        assertEquals(
+            "dev.locationapp.ACTION_STOP_COLLECTION",
+            LocationCollectionService.ACTION_STOP_COLLECTION,
+        )
     }
 }

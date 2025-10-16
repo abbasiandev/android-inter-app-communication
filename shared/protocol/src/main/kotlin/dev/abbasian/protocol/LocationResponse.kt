@@ -4,7 +4,6 @@ package dev.abbasian.protocol
  * All the different types of responses Location App can send back to Internet App.
  */
 sealed class LocationResponse {
-
     /**
      * Everything worked fine
      * @param message A message explaining what succeeded
@@ -36,7 +35,7 @@ sealed class LocationResponse {
      */
     data class Error(
         val message: String,
-        val code: ErrorCode = ErrorCode.INTERNAL_ERROR
+        val code: ErrorCode = ErrorCode.INTERNAL_ERROR,
     ) : LocationResponse() {
         override fun toString() = "Error[$code]: $message"
     }
@@ -61,11 +60,11 @@ sealed class LocationResponse {
         INVALID_COMMAND("INVALID_COMMAND"),
 
         /** The two apps couldn't talk to each other properly */
-        COMMUNICATION_ERROR("COMMUNICATION_ERROR");
+        COMMUNICATION_ERROR("COMMUNICATION_ERROR"),
+        ;
 
         companion object {
-            fun fromString(value: String): ErrorCode =
-                values().find { it.value == value } ?: INTERNAL_ERROR
+            fun fromString(value: String): ErrorCode = values().find { it.value == value } ?: INTERNAL_ERROR
         }
     }
 }

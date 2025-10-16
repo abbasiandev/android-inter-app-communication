@@ -8,27 +8,20 @@ import androidx.room.PrimaryKey
 data class LocationEntity(
     @PrimaryKey
     val id: String,
-
     @ColumnInfo(name = "encrypted_latitude", typeAffinity = ColumnInfo.BLOB)
     val encryptedLatitude: ByteArray,
-
     @ColumnInfo(name = "encrypted_longitude", typeAffinity = ColumnInfo.BLOB)
     val encryptedLongitude: ByteArray,
-
     @ColumnInfo(name = "iv_latitude", typeAffinity = ColumnInfo.BLOB)
     val ivLatitude: ByteArray,
-
     @ColumnInfo(name = "iv_longitude", typeAffinity = ColumnInfo.BLOB)
     val ivLongitude: ByteArray,
-
     @ColumnInfo(name = "accuracy")
     val accuracy: Float,
-
     @ColumnInfo(name = "timestamp")
     val timestamp: Long,
-
     @ColumnInfo(name = "provider")
-    val provider: String
+    val provider: String,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -20,9 +20,8 @@ data class LocationData(
     /** When this location was recorded */
     val timestamp: Long,
     /** Where it came from - could be "gps", "network", "fused", etc. */
-    val provider: String
+    val provider: String,
 ) : Parcelable {
-
     /**
      * Converts the timestamp into something humans can actually read
      */
@@ -43,9 +42,9 @@ data class LocationData(
      */
     fun isValid(): Boolean {
         return latitude in -90.0..90.0 &&
-                longitude in -180.0..180.0 &&
-                accuracy >= 0f &&
-                timestamp > 0L
+            longitude in -180.0..180.0 &&
+            accuracy >= 0f &&
+            timestamp > 0L
     }
 
     /**
@@ -64,7 +63,7 @@ data class LocationData(
 
     override fun toString(): String {
         return "LocationData(id='$id', lat=$latitude, lon=$longitude, " +
-                "accuracy=${accuracy}m, time=${getFormattedDate()}, provider='$provider')"
+            "accuracy=${accuracy}m, time=${getFormattedDate()}, provider='$provider')"
     }
 
     companion object {
@@ -74,7 +73,7 @@ data class LocationData(
                 longitude = -122.4194,
                 accuracy = 10.0f,
                 timestamp = System.currentTimeMillis(),
-                provider = "gps"
+                provider = "gps",
             )
         }
     }

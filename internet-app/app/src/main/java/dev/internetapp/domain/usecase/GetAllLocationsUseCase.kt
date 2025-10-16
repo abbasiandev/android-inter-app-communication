@@ -7,7 +7,7 @@ import dev.internetapp.domain.repository.CommandRepository
 
 class GetAllLocationsUseCase(
     private val repository: CommandRepository,
-    private val logger: AppLogger
+    private val logger: AppLogger,
 ) {
     suspend operator fun invoke(): LocationResponse {
         logger.d(TAG, "Executing GetAllLocationsUseCase")
