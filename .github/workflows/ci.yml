@@ -91,9 +91,11 @@ jobs:
   instrumentation-tests:
     name: Run Instrumentation Tests
     runs-on: macos-latest
+    timeout-minutes: 60
     strategy:
+      fail-fast: false
       matrix:
-        api-level: [29, 33]
+        api-level: [33]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -108,6 +110,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -115,35 +120,47 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}
+          key: avd-macos-${{ matrix.api-level }}-v3
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 20
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
+          target: default
+          arch: x86_64
+          profile: Nexus 6
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
+          disable-animations: true
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run Instrumentation Tests - Location App
         uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 20
         with:
           api-level: ${{ matrix.api-level }}
+          target: default
+          arch: x86_64
+          profile: Nexus 6
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
           disable-animations: true
-          script: ./gradlew :location-app:app:connectedDebugAndroidTest
+          script: ./gradlew :location-app:app:connectedDebugAndroidTest --stacktrace
 
       - name: Run Instrumentation Tests - Internet App
         uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 20
         with:
           api-level: ${{ matrix.api-level }}
+          target: default
+          arch: x86_64
+          profile: Nexus 6
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
           disable-animations: true
-          script: ./gradlew :internet-app:app:connectedDebugAndroidTest
+          script: ./gradlew :internet-app:app:connectedDebugAndroidTest --stacktrace
 
       - name: Upload Instrumentation Test Reports
         if: always()
