@@ -60,7 +60,9 @@ class BootReceiver : BroadcastReceiver() {
             }
 
             logger.i(TAG, "Location service restart command sent")
-        } catch (e: Exception) {
+        } catch (e: SecurityException) {
+            logger.e(TAG, "Security exception restarting service", e)
+        } catch (e: IllegalStateException) {
             logger.e(TAG, "Failed to restart location service", e)
         }
     }

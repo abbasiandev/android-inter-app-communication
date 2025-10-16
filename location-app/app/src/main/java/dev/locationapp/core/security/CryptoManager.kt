@@ -65,20 +65,15 @@ class CryptoManager
         /**
          * Get passphrase for SQLCipher database encryption
          */
-        fun getDatabasePassphrase(): String {
-            return if (keyStore.containsAlias(DB_PASSPHRASE_ALIAS)) {
-                // Retrieve existing passphrase
-                val entry = keyStore.getEntry(DB_PASSPHRASE_ALIAS, null)
-                // For simplicity, we generate a consistent passphrase
-                // In production, store this securely
+        fun getDatabasePassphrase(): String =
+            if (keyStore.containsAlias(DB_PASSPHRASE_ALIAS)) {
+                // retrieve existing passphrase
                 UUID.nameUUIDFromBytes(KEY_ALIAS.toByteArray()).toString()
             } else {
-                // Generate new passphrase
                 UUID.randomUUID().toString().also {
-                    // Store reference (in production, store this properly)
+                    // for store reference in production
                 }
             }
-        }
 
         private fun getOrCreateKey(): SecretKey {
             if (!keyStore.containsAlias(KEY_ALIAS)) {
@@ -95,11 +90,11 @@ class CryptoManager
                 )
 
             val spec =
-                KeyGenParameterSpec.Builder(
-                    KEY_ALIAS,
-                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
-                )
-                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                KeyGenParameterSpec
+                    .Builder(
+                        KEY_ALIAS,
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+                    ).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                     .setKeySize(KEY_SIZE)
                     .setUserAuthenticationRequired(false)
