@@ -11,6 +11,8 @@ lifecycle = "2.8.7"
 activity = "1.9.3"
 hilt = "2.52"
 koin = "3.5.0"
+ktlint = "12.1.1"
+detekt = "1.23.7"
 room = "2.6.1"
 sqlcipher = "4.5.4"
 sqlite = "2.4.0"
@@ -88,6 +90,9 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlin-parcelize = { id = "kotlin-parcelize" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+jacoco = { id = "jacoco" }
