@@ -91,7 +91,8 @@ jobs:
   instrumentation-tests:
     name: Run Instrumentation Tests
     runs-on: macos-13
-    timeout-minutes: 60
+    timeout-minutes: 90
+    app: [location-app, internet-app]
     strategy:
       fail-fast: false
       matrix:
@@ -127,31 +128,37 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          target: default
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run Instrumentation Tests
-        timeout-minutes: 30
+        timeout-minutes: 45
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          target: default
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
-            ./gradlew :location-app:app:connectedDebugAndroidTest --stacktrace
-            ./gradlew :internet-app:app:connectedDebugAndroidTest --stacktrace
+            adb wait-for-device
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
+            adb shell settings put global window_animation_scale 0.0
+            adb shell settings put global transition_animation_scale 0.0
+            adb shell settings put global animator_duration_scale 0.0
+            ./gradlew :${{ matrix.app }}:app:connectedDebugAndroidTest --stacktrace --max-workers=2
 
       - name: Upload Instrumentation Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: instrumentation-test-reports-api-${{ matrix.api-level }}
-          path: |
-            location-app/app/build/reports/androidTests/
-            internet-app/app/build/reports/androidTests/
+          name: instrumentation-test-reports-${{ matrix.app }}-api-${{ matrix.api-level }}
+          path: ${{ matrix.app }}/app/build/reports/androidTests/
 
   build:
     name: Build APKs
