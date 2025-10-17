@@ -1,6 +1,8 @@
-package dev.locationapp.core.security
+package dev.locationapp.core.security.data
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.locationapp.core.security.domain.FakeCryptoManager
+import dev.locationapp.core.security.domain.ICryptoManager
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -8,11 +10,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CryptoManagerTest {
-    private lateinit var cryptoManager: CryptoManager
+    private lateinit var cryptoManager: ICryptoManager
 
     @Before
     fun setup() {
-        cryptoManager = CryptoManager()
+        cryptoManager = FakeCryptoManager()
     }
 
     @Test

@@ -5,7 +5,7 @@ import dagger.Provides
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import dev.abbasian.protocol.AppLogger
-import dev.locationapp.core.security.CryptoManager
+import dev.locationapp.core.security.data.CryptoManager
 import dev.locationapp.di.AppModule
 import dev.locationapp.di.DatabaseModule
 import dev.locationapp.feature.location.domain.repository.LocationRepository

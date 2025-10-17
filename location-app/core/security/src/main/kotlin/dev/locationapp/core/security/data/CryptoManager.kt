@@ -1,7 +1,9 @@
-package dev.locationapp.core.security
+package dev.locationapp.core.security.data
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import dev.locationapp.core.security.domain.EncryptedData
+import dev.locationapp.core.security.domain.ICryptoManager
 import java.security.KeyStore
 import java.util.UUID
 import javax.crypto.Cipher
@@ -14,13 +16,13 @@ import javax.inject.Singleton
 @Singleton
 class CryptoManager
     @Inject
-    constructor() {
+    constructor() : ICryptoManager {
         private val keyStore =
             KeyStore.getInstance(KEYSTORE_PROVIDER).apply {
                 load(null)
             }
 
-        fun encrypt(plainText: String): EncryptedData {
+        override fun encrypt(plainText: String): EncryptedData {
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKey())
             val iv = cipher.iv
@@ -28,7 +30,7 @@ class CryptoManager
             return EncryptedData(encrypted, iv)
         }
 
-        fun decrypt(encryptedData: EncryptedData): String {
+        override fun decrypt(encryptedData: EncryptedData): String {
             val cipher = Cipher.getInstance(TRANSFORMATION)
             val spec = GCMParameterSpec(GCM_TAG_LENGTH, encryptedData.iv)
             cipher.init(Cipher.DECRYPT_MODE, getOrCreateKey(), spec)
@@ -36,7 +38,7 @@ class CryptoManager
             return String(decrypted, Charsets.UTF_8)
         }
 
-        fun getDatabasePassphrase(): String =
+        override fun getDatabasePassphrase(): String =
             if (keyStore.containsAlias(DB_PASSPHRASE_ALIAS)) {
                 UUID
                     .nameUUIDFromBytes(KEY_ALIAS.toByteArray())

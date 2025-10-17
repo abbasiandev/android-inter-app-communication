@@ -1,8 +1,8 @@
 package dev.locationapp.feature.location.data.repository
 
 import dev.abbasian.protocol.LocationData
-import dev.locationapp.core.security.CryptoManager
-import dev.locationapp.core.security.EncryptedData
+import dev.locationapp.core.security.data.CryptoManager
+import dev.locationapp.core.security.domain.EncryptedData
 import dev.locationapp.feature.location.data.local.LocationDao
 import dev.locationapp.feature.location.data.local.LocationEntity
 import dev.locationapp.feature.location.domain.repository.LocationRepository

@@ -1,4 +1,4 @@
-package dev.locationapp.core.security
+package dev.locationapp.core.security.domain
 
 data class EncryptedData(
     val data: ByteArray,

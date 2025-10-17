@@ -7,7 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.locationapp.core.security.CryptoManager
+import dev.locationapp.core.security.data.CryptoManager
 import dev.locationapp.feature.location.data.local.LocationDao
 import dev.locationapp.feature.location.data.local.LocationDatabase
 import net.sqlcipher.database.SQLiteDatabase
