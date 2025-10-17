@@ -92,11 +92,11 @@ jobs:
     name: Run Instrumentation Tests
     runs-on: macos-13
     timeout-minutes: 90
-    module: ['location-app', 'internet-app']
     strategy:
       fail-fast: false
       matrix:
         api-level: [29]
+        module: ['location-app', 'internet-app']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -151,14 +151,14 @@ jobs:
             adb shell settings put global window_animation_scale 0.0
             adb shell settings put global transition_animation_scale 0.0
             adb shell settings put global animator_duration_scale 0.0
-            ./gradlew :${{ matrix.app }}:app:connectedDebugAndroidTest --stacktrace --max-workers=2
+            ./gradlew :${{ matrix.module }}:app:connectedDebugAndroidTest --stacktrace --max-workers=2
 
       - name: Upload Instrumentation Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: instrumentation-test-reports-${{ matrix.app }}-api-${{ matrix.api-level }}
-          path: ${{ matrix.app }}/app/build/reports/androidTests/
+          name: instrumentation-test-reports-${{ matrix.module }}-api-${{ matrix.api-level }}
+          path: ${{ matrix.module }}/app/build/reports/androidTests/
 
   build:
     name: Build APKs
