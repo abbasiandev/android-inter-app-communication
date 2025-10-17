@@ -82,20 +82,17 @@ object ProtocolConstants {
     /**
      * Checks if the given command type is one we actually support
      */
-    fun isValidCommandType(type: String?): Boolean {
-        return type != null && LocationCommand.getAllTypes().contains(type)
-    }
+    fun isValidCommandType(type: String?): Boolean = type != null && LocationCommand.getAllTypes().contains(type)
 
     /**
      * Checks if the response type is one of the recognized types
      */
-    fun isValidResponseType(type: String?): Boolean {
-        return type in
+    fun isValidResponseType(type: String?): Boolean =
+        type in
             listOf(
                 RESPONSE_TYPE_SUCCESS,
                 RESPONSE_TYPE_LOCATION_LIST,
                 RESPONSE_TYPE_SINGLE_LOCATION,
                 RESPONSE_TYPE_ERROR,
             )
-    }
 }

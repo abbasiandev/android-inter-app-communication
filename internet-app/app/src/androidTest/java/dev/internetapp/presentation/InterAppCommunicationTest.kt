@@ -6,7 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.abbasian.protocol.LocationCommand
 import dev.abbasian.protocol.LocationResponse
-import dev.internetapp.data.CommandRepositoryImpl
+import dev.internetapp.feature.commandsender.data.repository.CommandRepositoryImpl
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
