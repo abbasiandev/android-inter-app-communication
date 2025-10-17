@@ -38,16 +38,7 @@ class CryptoManager
             return String(decrypted, Charsets.UTF_8)
         }
 
-        override fun getDatabasePassphrase(): String =
-            if (keyStore.containsAlias(DB_PASSPHRASE_ALIAS)) {
-                UUID
-                    .nameUUIDFromBytes(KEY_ALIAS.toByteArray())
-                    .toString()
-            } else {
-                UUID
-                    .randomUUID()
-                    .toString()
-            }
+        override fun getDatabasePassphrase(): String = UUID.nameUUIDFromBytes(KEY_ALIAS.toByteArray()).toString()
 
         private fun getOrCreateKey(): SecretKey {
             if (!keyStore.containsAlias(KEY_ALIAS)) {
