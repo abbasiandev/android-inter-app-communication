@@ -92,7 +92,7 @@ jobs:
     name: Run Instrumentation Tests
     runs-on: macos-13
     timeout-minutes: 90
-    app: ['location-app', 'internet-app']
+    module: ['location-app', 'internet-app']
     strategy:
       fail-fast: false
       matrix:
