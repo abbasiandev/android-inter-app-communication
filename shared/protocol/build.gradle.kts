@@ -1,9 +1,9 @@
 plugins {
     id("com.android.library")
     alias(libs.plugins.kotlin.android)
-    id("kotlin-parcelize")
-    id("org.jlleitschuh.gradle.ktlint")
-    id("io.gitlab.arturbosch.detekt")
+    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.detekt) apply false
 }
 
 android {
