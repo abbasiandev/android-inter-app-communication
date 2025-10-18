@@ -6,6 +6,4 @@ import dagger.hilt.components.SingletonComponent
 
 @Module
 @InstallIn(SingletonComponent::class)
-object CommandFeatureModule {
-    // TODO: Add bindings if needed in the future
-}
+object CommandFeatureModule

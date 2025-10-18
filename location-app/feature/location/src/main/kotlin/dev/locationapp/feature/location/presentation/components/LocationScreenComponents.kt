@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.abbasian.protocol.LocationData
+import dev.abbasian.protocol.domain.model.LocationData
 import dev.locationapp.feature.location.presentation.LocationListState
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -13,7 +13,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import dagger.hilt.android.testing.UninstallModules
-import dev.abbasian.protocol.AppLogger
+import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.locationapp.feature.location.di.LocationFeatureModule
 import dev.locationapp.feature.location.domain.usecase.SaveLocationUseCase
 import io.mockk.clearAllMocks

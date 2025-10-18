@@ -22,9 +22,9 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import dagger.hilt.android.AndroidEntryPoint
-import dev.abbasian.protocol.AppLogger
-import dev.abbasian.protocol.LocationData
-import dev.abbasian.protocol.ProtocolConstants
+import dev.abbasian.protocol.data.constants.ProtocolConstants
+import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.LocationData
 import dev.locationapp.feature.location.domain.usecase.SaveLocationUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -9,10 +9,10 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import dev.abbasian.protocol.AppLogger
-import dev.abbasian.protocol.LocationCommand
-import dev.abbasian.protocol.LocationResponse
-import dev.abbasian.protocol.ProtocolConstants
+import dev.abbasian.protocol.data.constants.ProtocolConstants
+import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.LocationCommand
+import dev.abbasian.protocol.domain.model.LocationResponse
 import dev.locationapp.feature.command.data.handler.BundleFactory
 import dev.locationapp.feature.command.data.handler.CommandHandlers
 import dev.locationapp.feature.location.domain.repository.LocationRepository

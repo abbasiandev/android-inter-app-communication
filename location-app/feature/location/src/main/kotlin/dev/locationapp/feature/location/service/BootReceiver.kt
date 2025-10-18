@@ -8,7 +8,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import dev.abbasian.protocol.AppLogger
+import dev.abbasian.protocol.domain.logger.AppLogger
 
 class BootReceiver : BroadcastReceiver() {
     @EntryPoint

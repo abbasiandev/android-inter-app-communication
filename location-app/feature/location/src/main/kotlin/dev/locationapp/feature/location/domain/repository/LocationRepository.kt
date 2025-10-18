@@ -1,6 +1,6 @@
 package dev.locationapp.feature.location.domain.repository
 
-import dev.abbasian.protocol.LocationData
+import dev.abbasian.protocol.domain.model.LocationData
 import kotlinx.coroutines.flow.Flow
 
 interface LocationRepository {

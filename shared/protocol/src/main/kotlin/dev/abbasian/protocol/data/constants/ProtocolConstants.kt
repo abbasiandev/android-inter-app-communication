@@ -1,4 +1,6 @@
-package dev.abbasian.protocol
+package dev.abbasian.protocol.data.constants
+
+import dev.abbasian.protocol.domain.model.LocationCommand
 
 /**
  * Holds the constant values we need for talking between the two apps.
@@ -82,7 +84,7 @@ object ProtocolConstants {
     /**
      * Checks if the given command type is one we actually support
      */
-    fun isValidCommandType(type: String?): Boolean = type != null && LocationCommand.getAllTypes().contains(type)
+    fun isValidCommandType(type: String?): Boolean = type != null && LocationCommand.Companion.getAllTypes().contains(type)
 
     /**
      * Checks if the response type is one of the recognized types

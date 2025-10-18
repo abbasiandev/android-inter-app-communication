@@ -1,7 +1,7 @@
 package dev.locationapp.feature.location.data.repository
 
 import app.cash.turbine.test
-import dev.abbasian.protocol.LocationData
+import dev.abbasian.protocol.domain.model.LocationData
 import dev.locationapp.core.security.data.CryptoManager
 import dev.locationapp.core.security.domain.EncryptedData
 import dev.locationapp.feature.location.data.local.LocationDao

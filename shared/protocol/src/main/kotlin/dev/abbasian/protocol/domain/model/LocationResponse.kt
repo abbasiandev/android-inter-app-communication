@@ -1,4 +1,4 @@
-package dev.abbasian.protocol
+package dev.abbasian.protocol.domain.model
 
 /**
  * All the different types of responses Location App can send back to Internet App.
@@ -8,7 +8,9 @@ sealed class LocationResponse {
      * Everything worked fine
      * @param message A message explaining what succeeded
      */
-    data class Success(val message: String) : LocationResponse() {
+    data class Success(
+        val message: String,
+    ) : LocationResponse() {
         override fun toString() = "Success: $message"
     }
 
@@ -16,7 +18,9 @@ sealed class LocationResponse {
      * Here's a bunch of locations you asked for
      * @param locations All the LocationData we found
      */
-    data class LocationList(val locations: List<LocationData>) : LocationResponse() {
+    data class LocationList(
+        val locations: List<LocationData>,
+    ) : LocationResponse() {
         override fun toString() = "LocationList: ${locations.size} locations"
     }
 
@@ -24,7 +28,9 @@ sealed class LocationResponse {
      * Here's one specific location (or null if we don't have one)
      * @param location The LocationData, or null if none exists
      */
-    data class SingleLocation(val location: LocationData?) : LocationResponse() {
+    data class SingleLocation(
+        val location: LocationData?,
+    ) : LocationResponse() {
         override fun toString() = "SingleLocation: $location"
     }
 
@@ -43,7 +49,9 @@ sealed class LocationResponse {
     /**
      * Different categories of things that can go wrong
      */
-    enum class ErrorCode(val value: String) {
+    enum class ErrorCode(
+        val value: String,
+    ) {
         /** Location App said no to the permission request */
         PERMISSION_DENIED("PERMISSION_DENIED"),
 

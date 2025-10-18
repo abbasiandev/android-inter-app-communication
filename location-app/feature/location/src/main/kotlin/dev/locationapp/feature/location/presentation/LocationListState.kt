@@ -1,6 +1,6 @@
 package dev.locationapp.feature.location.presentation
 
-import dev.abbasian.protocol.LocationData
+import dev.abbasian.protocol.domain.model.LocationData
 
 data class LocationListState(
     val locations: List<LocationData> = emptyList(),
