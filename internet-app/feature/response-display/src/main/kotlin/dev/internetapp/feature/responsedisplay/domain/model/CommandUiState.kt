@@ -1,6 +1,6 @@
 package dev.internetapp.feature.responsedisplay.domain.model
 
-import dev.abbasian.protocol.LocationData
+import dev.abbasian.protocol.domain.model.LocationData
 
 data class CommandUiState(
     val isLoading: Boolean = false,

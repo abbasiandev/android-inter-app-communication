@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import dev.abbasian.protocol.AppLogger
+import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.locationapp.feature.location.presentation.components.locationScreen
 import dev.locationapp.feature.location.presentation.ui.theme.locationAppTheme
 import dev.locationapp.feature.location.service.LocationCollectionService

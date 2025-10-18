@@ -1,8 +1,8 @@
 package dev.internetapp.feature.commandsender.domain.usecase
 
-import dev.abbasian.protocol.AppLogger
-import dev.abbasian.protocol.LocationCommand
-import dev.abbasian.protocol.LocationResponse
+import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.LocationCommand
+import dev.abbasian.protocol.domain.model.LocationResponse
 import dev.internetapp.feature.commandsender.domain.repository.CommandRepository
 
 class StopServiceUseCase(

@@ -5,11 +5,11 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import dev.abbasian.protocol.AppLogger
-import dev.abbasian.protocol.LocationCommand
-import dev.abbasian.protocol.LocationData
-import dev.abbasian.protocol.LocationResponse
-import dev.abbasian.protocol.ProtocolConstants
+import dev.abbasian.protocol.data.constants.ProtocolConstants
+import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.LocationCommand
+import dev.abbasian.protocol.domain.model.LocationData
+import dev.abbasian.protocol.domain.model.LocationResponse
 import dev.internetapp.feature.commandsender.domain.repository.CommandRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException

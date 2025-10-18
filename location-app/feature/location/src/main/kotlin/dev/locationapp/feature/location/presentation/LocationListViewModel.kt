@@ -3,7 +3,7 @@ package dev.locationapp.feature.location.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.abbasian.protocol.AppLogger
+import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.locationapp.feature.location.domain.usecase.GetAllLocationsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

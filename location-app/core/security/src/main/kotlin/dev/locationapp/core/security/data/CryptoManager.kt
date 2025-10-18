@@ -73,7 +73,6 @@ class CryptoManager
         companion object {
             private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
             private const val KEY_ALIAS = "location_encryption_key"
-            private const val DB_PASSPHRASE_ALIAS = "db_passphrase_key"
             private const val TRANSFORMATION = "AES/GCM/NoPadding"
             private const val GCM_TAG_LENGTH = 128
             private const val KEY_SIZE = 256

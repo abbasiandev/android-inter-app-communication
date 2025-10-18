@@ -4,8 +4,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.abbasian.protocol.AppLogger
-import dev.abbasian.protocol.TimberLogger
+import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.logger.TimberLogger
 import javax.inject.Singleton
 
 @Module

@@ -1,4 +1,6 @@
-package dev.abbasian.protocol
+package dev.abbasian.protocol.domain.logger
+
+import timber.log.Timber
 
 /**
  * Basic logging interface that works in both apps.
@@ -59,14 +61,14 @@ class TimberLogger : AppLogger {
         tag: String,
         message: String,
     ) {
-        timber.log.Timber.tag(tag).d(message)
+        Timber.tag(tag).d(message)
     }
 
     override fun i(
         tag: String,
         message: String,
     ) {
-        timber.log.Timber.tag(tag).i(message)
+        Timber.tag(tag).i(message)
     }
 
     override fun w(
@@ -75,9 +77,9 @@ class TimberLogger : AppLogger {
         throwable: Throwable?,
     ) {
         if (throwable != null) {
-            timber.log.Timber.tag(tag).w(throwable, message)
+            Timber.tag(tag).w(throwable, message)
         } else {
-            timber.log.Timber.tag(tag).w(message)
+            Timber.tag(tag).w(message)
         }
     }
 
@@ -87,9 +89,9 @@ class TimberLogger : AppLogger {
         throwable: Throwable?,
     ) {
         if (throwable != null) {
-            timber.log.Timber.tag(tag).e(throwable, message)
+            Timber.tag(tag).e(throwable, message)
         } else {
-            timber.log.Timber.tag(tag).e(message)
+            Timber.tag(tag).e(message)
         }
     }
 }

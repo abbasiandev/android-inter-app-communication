@@ -1,9 +1,9 @@
 package dev.internetapp.feature.responsedisplay
 
 import app.cash.turbine.test
-import dev.abbasian.protocol.AppLogger
-import dev.abbasian.protocol.LocationData
-import dev.abbasian.protocol.LocationResponse
+import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.LocationData
+import dev.abbasian.protocol.domain.model.LocationResponse
 import dev.internetapp.feature.commandsender.domain.usecase.GetAllLocationsUseCase
 import dev.internetapp.feature.commandsender.domain.usecase.GetLatestLocationUseCase
 import dev.internetapp.feature.commandsender.domain.usecase.StartServiceUseCase

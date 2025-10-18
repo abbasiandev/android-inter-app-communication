@@ -1,11 +1,13 @@
-package dev.abbasian.protocol
+package dev.abbasian.protocol.domain.model
 
 /**
  * All the different commands that Internet App can send to Location App.
  *
  * Each one has its own type string so we can serialize/deserialize properly.
  */
-sealed class LocationCommand(val type: String) {
+sealed class LocationCommand(
+    val type: String,
+) {
     /**
      * Tells Location App to fire up the location collection service
      */
