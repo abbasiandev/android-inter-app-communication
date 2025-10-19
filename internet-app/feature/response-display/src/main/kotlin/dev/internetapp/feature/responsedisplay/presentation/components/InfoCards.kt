@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "ImplicitDefaultLocale")
+
 package dev.internetapp.feature.responsedisplay.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement

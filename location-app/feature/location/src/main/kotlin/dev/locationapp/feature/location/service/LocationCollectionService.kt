@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions", "TooGenericExceptionCaught")
+
 package dev.locationapp.feature.location.service
 
 import android.Manifest

@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package dev.internetapp.feature.responsedisplay.domain.model
 
 import dev.abbasian.protocol.domain.model.CommandError

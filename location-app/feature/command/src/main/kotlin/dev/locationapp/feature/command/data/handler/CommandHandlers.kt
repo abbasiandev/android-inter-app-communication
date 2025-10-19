@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package dev.locationapp.feature.command.data.handler
 
 import android.content.Context

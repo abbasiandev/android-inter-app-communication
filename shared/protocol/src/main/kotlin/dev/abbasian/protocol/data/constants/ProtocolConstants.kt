@@ -84,6 +84,7 @@ object ProtocolConstants {
     /**
      * Checks if the given command type is one we actually support
      */
+    @Suppress("MaxLineLength")
     fun isValidCommandType(type: String?): Boolean = type != null && LocationCommand.Companion.getAllTypes().contains(type)
 
     /**
