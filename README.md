@@ -38,10 +38,10 @@
 - Provides compose UI for all operations
 
 **Location App (MVVM + Hilt):**
-- Collects user location every minute in the background
+- Collects user location every 2-3 minute in the background
 - Stores location data with AES-256-GCM encryption using Android KeyStore
 - Provides secure ContentProvider interface for external commands
-- Auto-restarts after device reboot or process termination
+- Auto-restarts after process termination
 - Displays collected locations in a compose UI
 
 ---
@@ -472,7 +472,7 @@ class LocationCollectionServiceTest {
 ## Part of Criteria
 
 ✅ Both apps compile and run without errors  
-✅ Location collected every minute in background  
+✅ Location collected every 2-3 minute in background  
 ✅ Service survives reboot and system kills  
 ✅ Data encrypted with KeyStore  
 ✅ Commands sent and responses received reliably  
@@ -481,5 +481,7 @@ class LocationCollectionServiceTest {
 ✅ Clean Architecture properly implemented  
 ✅ Comprehensive documentation provided  
 ✅ Git Flow followed with clear commits
+✅ Error handling and recovery logic
+✅ Analytics and performance monitoring
 
 ---

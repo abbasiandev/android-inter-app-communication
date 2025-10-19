@@ -18,6 +18,7 @@ dependencyResolutionManagement {
 rootProject.name = "mahdiAbbasainMohamadiAndroidCodeChallenge"
 
 include(":shared:protocol")
+include(":shared:debug")
 include(":location-app:app")
 include(":location-app:feature:location")
 include(":location-app:feature:command")

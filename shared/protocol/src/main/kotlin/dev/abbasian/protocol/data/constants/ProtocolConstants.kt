@@ -77,7 +77,7 @@ object ProtocolConstants {
     const val SERVICE_NOTIFICATION_CHANNEL_ID = "location_service_channel"
 
     /** How often we grab location updates in milliseconds */
-    const val LOCATION_UPDATE_INTERVAL_MS = 60_000L
+    const val LOCATION_UPDATE_INTERVAL_MS = 30000L
 
     // ==================== Validation ====================
 

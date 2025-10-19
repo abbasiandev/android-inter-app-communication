@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
+import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -25,12 +26,15 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.abbasian.protocol.data.constants.ProtocolConstants
 import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.abbasian.protocol.domain.model.LocationData
+import dev.locationapp.analytics.LocationAppAnalytics
 import dev.locationapp.feature.location.domain.usecase.SaveLocationUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 
@@ -42,17 +46,24 @@ class LocationCollectionService : Service() {
     @Inject
     lateinit var logger: AppLogger
 
+    @Inject
+    lateinit var analytics: LocationAppAnalytics
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+    private lateinit var notificationManager: NotificationManager
 
     private var isCollecting = false
+    private var retryCount = 0
+    private val maxRetries = 3
 
     override fun onCreate() {
         super.onCreate()
         logger.i(TAG, "Service created")
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         setupLocationCallback()
         createNotificationChannel()
     }
@@ -82,6 +93,8 @@ class LocationCollectionService : Service() {
         }
 
         logger.i(TAG, "Starting location collection")
+        analytics.trackServiceStarted()
+
         startForeground(ProtocolConstants.SERVICE_NOTIFICATION_ID, createNotification())
         startLocationUpdates()
         isCollecting = true
@@ -94,6 +107,8 @@ class LocationCollectionService : Service() {
         }
 
         logger.i(TAG, "Stopping location collection")
+        analytics.trackServiceStopped()
+
         stopLocationUpdates()
         isCollecting = false
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -105,13 +120,20 @@ class LocationCollectionService : Service() {
             object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     locationResult.lastLocation?.let { location ->
-                        logger.d(TAG, "Location received: ${location.latitude}, ${location.longitude}")
+                        logger.d(
+                            TAG,
+                            "Location received: ${location.latitude}, ${location.longitude}",
+                        )
                         saveLocation(location)
+                        retryCount = 0
                     }
                 }
 
                 override fun onLocationAvailability(availability: LocationAvailability) {
                     logger.d(TAG, "Location availability: ${availability.isLocationAvailable}")
+                    if (!availability.isLocationAvailable) {
+                        handleLocationUnavailable()
+                    }
                 }
             }
     }
@@ -123,7 +145,7 @@ class LocationCollectionService : Service() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             logger.e(TAG, "Location permission not granted")
-            stopSelf()
+            handlePermissionError()
             return
         }
 
@@ -143,11 +165,13 @@ class LocationCollectionService : Service() {
             .requestLocationUpdates(
                 locationRequest,
                 locationCallback,
-                null,
+                Looper.getMainLooper(),
             ).addOnSuccessListener {
                 logger.i(TAG, "Location updates started successfully")
+                updateNotification("Location tracking active")
             }.addOnFailureListener { exception ->
-                logger.e(TAG, "Failed to start location updates: ${exception.message}")
+                logger.e(TAG, "Failed to start location updates", exception)
+                handleLocationUpdateError(exception)
             }
     }
 
@@ -158,6 +182,8 @@ class LocationCollectionService : Service() {
 
     private fun saveLocation(location: Location) {
         serviceScope.launch {
+            val saveStartTime = System.currentTimeMillis()
+
             try {
                 val locationData =
                     LocationData(
@@ -169,19 +195,125 @@ class LocationCollectionService : Service() {
                         provider = location.provider ?: "unknown",
                     )
 
+                analytics.trackLocationCollected(locationData)
+
                 saveLocationUseCase(locationData)
+
+                val saveDuration = System.currentTimeMillis() - saveStartTime
                 logger.d(TAG, "Location saved successfully")
+
+                analytics.trackLocationSaved(success = true, durationMs = saveDuration)
             } catch (e: IllegalArgumentException) {
-                logger.e(TAG, "Invalid location data: ${e.message}")
+                val saveDuration = System.currentTimeMillis() - saveStartTime
+                logger.e(TAG, "Invalid location data", e)
+                analytics.trackLocationSaved(success = false, durationMs = saveDuration)
+                handleSaveError(e)
             } catch (e: IllegalStateException) {
-                logger.e(TAG, "Error saving location: ${e.message}")
+                val saveDuration = System.currentTimeMillis() - saveStartTime
+                logger.e(TAG, "Error saving location", e)
+                analytics.trackLocationSaved(success = false, durationMs = saveDuration)
+                handleSaveError(e)
+            } catch (e: Exception) {
+                val saveDuration = System.currentTimeMillis() - saveStartTime
+                logger.e(TAG, "Unexpected error saving location", e)
+                analytics.trackLocationSaved(success = false, durationMs = saveDuration)
+                handleSaveError(e)
             }
         }
     }
 
+    private fun handlePermissionError() {
+        showErrorNotification(
+            "Location Permission Denied",
+            "Please grant location permission to continue",
+        )
+        stopLocationCollection()
+    }
+
+    private fun handleLocationUnavailable() {
+        logger.w(TAG, "Location unavailable")
+        if (retryCount < maxRetries) {
+            scheduleRetry()
+        } else {
+            showErrorNotification(
+                "Location Unavailable",
+                "Unable to access location services after $maxRetries attempts",
+            )
+        }
+    }
+
+    private fun handleLocationUpdateError(exception: Exception) {
+        logger.e(TAG, "Location update error", exception)
+
+        when (exception) {
+            is SecurityException -> {
+                handlePermissionError()
+            }
+
+            else -> {
+                if (retryCount < maxRetries) {
+                    scheduleRetry()
+                } else {
+                    showErrorNotification(
+                        "Location Service Error",
+                        exception.message ?: "Failed to get location updates",
+                    )
+                }
+            }
+        }
+    }
+
+    private fun handleSaveError(exception: Exception) {
+        logger.e(TAG, "Save error", exception)
+        showErrorNotification(
+            "Database Error",
+            "Failed to save location: ${exception.message}",
+        )
+    }
+
+    private fun scheduleRetry() {
+        retryCount++
+        logger.i(TAG, "Scheduling retry $retryCount/$maxRetries")
+
+        serviceScope.launch {
+            val delayMs = (1000L * retryCount).coerceAtMost(30_000L)
+            updateNotification("Retrying location updates ($retryCount/$maxRetries)...")
+            delay(delayMs)
+
+            if (isCollecting) {
+                logger.i(TAG, "Retrying location updates")
+                withContext(Dispatchers.Main) {
+                    startLocationUpdates()
+                }
+            }
+        }
+    }
+
+    private fun showErrorNotification(
+        title: String,
+        message: String,
+    ) {
+        val notification =
+            NotificationCompat
+                .Builder(this, ERROR_CHANNEL_ID)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setSmallIcon(R.drawable.ic_dialog_alert)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .build()
+
+        notificationManager.notify(ERROR_NOTIFICATION_ID, notification)
+    }
+
+    private fun updateNotification(contentText: String) {
+        val notification = createNotification(contentText)
+        notificationManager.notify(ProtocolConstants.SERVICE_NOTIFICATION_ID, notification)
+    }
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel =
+            val serviceChannel =
                 NotificationChannel(
                     CHANNEL_ID,
                     "Location Collection",
@@ -191,13 +323,23 @@ class LocationCollectionService : Service() {
                     setShowBadge(false)
                 }
 
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-            logger.i(TAG, "Notification channel created")
+            val errorChannel =
+                NotificationChannel(
+                    ERROR_CHANNEL_ID,
+                    "Location Errors",
+                    NotificationManager.IMPORTANCE_HIGH,
+                ).apply {
+                    description = "Notifications for location service errors"
+                    setShowBadge(true)
+                }
+
+            notificationManager.createNotificationChannel(serviceChannel)
+            notificationManager.createNotificationChannel(errorChannel)
+            logger.i(TAG, "Notification channels created")
         }
     }
 
-    private fun createNotification(): Notification {
+    private fun createNotification(contentText: String = "Collecting location data in background"): Notification {
         val stopIntent =
             Intent(this, LocationCollectionService::class.java).apply {
                 action = ACTION_STOP_COLLECTION
@@ -214,7 +356,7 @@ class LocationCollectionService : Service() {
         return NotificationCompat
             .Builder(this, CHANNEL_ID)
             .setContentTitle("Location Collection Active")
-            .setContentText("Collecting location data in background")
+            .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_menu_mylocation)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -228,6 +370,8 @@ class LocationCollectionService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         logger.i(TAG, "Service destroyed")
+        analytics.trackMemoryUsage()
+
         stopLocationUpdates()
         serviceScope.cancel()
     }
@@ -235,6 +379,8 @@ class LocationCollectionService : Service() {
     companion object {
         private const val TAG = "LocationCollectionService"
         private const val CHANNEL_ID = "location_collection_channel"
+        private const val ERROR_CHANNEL_ID = "location_error_channel"
+        private const val ERROR_NOTIFICATION_ID = 1002
         const val ACTION_START_COLLECTION = "dev.locationapp.ACTION_START_COLLECTION"
         const val ACTION_STOP_COLLECTION = "dev.locationapp.ACTION_STOP_COLLECTION"
     }

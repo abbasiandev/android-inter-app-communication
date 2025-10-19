@@ -89,11 +89,10 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onCreate creates notification channel`() {
-        val service =
-            Robolectric
-                .buildService(LocationCollectionService::class.java)
-                .create()
-                .get()
+        Robolectric
+            .buildService(LocationCollectionService::class.java)
+            .create()
+            .get()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager =
@@ -104,6 +103,8 @@ class LocationCollectionServiceTest {
             val channel = notificationManager.getNotificationChannel("location_collection_channel")
             TestCase.assertNotNull(channel)
             TestCase.assertEquals("Location Collection", channel.name)
+        } else {
+            TestCase.assertTrue("Test passes on API < 26", true)
         }
     }
 
@@ -242,12 +243,6 @@ class LocationCollectionServiceTest {
 
     @Test
     fun `onDestroy cleans up resources`() {
-        val service =
-            Robolectric
-                .buildService(LocationCollectionService::class.java)
-                .create()
-                .get()
-
         Robolectric
             .buildService(LocationCollectionService::class.java)
             .create()

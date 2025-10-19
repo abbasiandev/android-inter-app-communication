@@ -36,6 +36,7 @@ dependencies {
     implementation(project(":location-app:core:common"))
     implementation(project(":location-app:core:security"))
     implementation(project(":shared:protocol"))
+    implementation(project(":shared:debug"))
     testImplementation(project(":location-app:core:database"))
 
     implementation(libs.androidx.core.ktx)

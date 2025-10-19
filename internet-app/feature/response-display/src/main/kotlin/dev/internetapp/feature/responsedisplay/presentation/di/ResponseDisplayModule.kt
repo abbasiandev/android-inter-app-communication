@@ -13,6 +13,7 @@ val responseDisplayModule =
                 getAllLocationsUseCase = get(),
                 getLatestLocationUseCase = get(),
                 logger = get(),
+                analytics = get(),
             )
         }
     }

@@ -2,18 +2,24 @@ package dev.locationapp
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-import net.sqlcipher.BuildConfig
+import dev.locationapp.analytics.LocationAppAnalytics
 import timber.log.Timber
+import javax.inject.Inject
 
 @HiltAndroidApp
 class LocationApp : Application() {
+    @Inject
+    lateinit var analytics: LocationAppAnalytics
+
     override fun onCreate() {
         super.onCreate()
 
         if (BuildConfig.DEBUG) {
-            Timber.Forest.plant(Timber.DebugTree())
+            Timber.plant(Timber.DebugTree())
         }
 
-        Timber.Forest.i("LocationApp", "Application started")
+        analytics.trackAppLaunched()
+
+        Timber.d("LocationApp initialized")
     }
 }

@@ -13,6 +13,7 @@ import dev.abbasian.protocol.data.constants.ProtocolConstants
 import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.abbasian.protocol.domain.model.LocationCommand
 import dev.abbasian.protocol.domain.model.LocationResponse
+import dev.locationapp.analytics.LocationAppAnalytics
 import dev.locationapp.feature.command.data.handler.BundleFactory
 import dev.locationapp.feature.command.data.handler.CommandHandlers
 import dev.locationapp.feature.location.domain.repository.LocationRepository
@@ -28,12 +29,15 @@ class LocationCommandProvider : ContentProvider() {
         fun locationRepository(): LocationRepository
 
         fun logger(): AppLogger
+
+        fun analytics(): LocationAppAnalytics
     }
 
     private val providerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var logger: AppLogger
     private lateinit var commandHandlers: CommandHandlers
+    private lateinit var analytics: LocationAppAnalytics
 
     override fun onCreate(): Boolean {
         val appContext = context?.applicationContext ?: return false
@@ -45,11 +49,13 @@ class LocationCommandProvider : ContentProvider() {
             )
 
         logger = entryPoint.logger()
+        analytics = entryPoint.analytics()
         commandHandlers =
             CommandHandlers(
                 appContext,
                 entryPoint.locationRepository(),
                 logger,
+                analytics,
                 providerScope.coroutineContext,
             )
 

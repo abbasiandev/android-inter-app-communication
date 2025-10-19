@@ -1,6 +1,7 @@
 package dev.internetapp
 
 import android.app.Application
+import dev.internetapp.core.common.di.analyticsModule
 import dev.internetapp.core.common.di.commonModule
 import dev.internetapp.feature.commandsender.di.commandSenderModule
 import dev.internetapp.feature.responsedisplay.presentation.di.responseDisplayModule
@@ -25,6 +26,7 @@ class InternetApp : Application() {
             androidContext(this@InternetApp)
             modules(
                 commonModule,
+                analyticsModule,
                 commandSenderModule,
                 responseDisplayModule,
             )

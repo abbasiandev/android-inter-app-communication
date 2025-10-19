@@ -1,5 +1,6 @@
 package dev.internetapp.feature.responsedisplay.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -14,8 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.internetapp.feature.responsedisplay.domain.model.CommandEffect
+import dev.internetapp.feature.responsedisplay.domain.model.CommandIntent
 import dev.internetapp.feature.responsedisplay.presentation.components.controlButtons
 import dev.internetapp.feature.responsedisplay.presentation.components.errorCard
 import dev.internetapp.feature.responsedisplay.presentation.components.lastResponseCard
@@ -50,8 +57,37 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    commandScreen(viewModel = viewModel)
+                    mainScreenWithFab(viewModel = viewModel)
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun mainScreenWithFab(viewModel: CommandViewModel) {
+        Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = {
+                        startActivity(Intent(this@MainActivity, InternetDebugActivity::class.java))
+                    },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BugReport,
+                        contentDescription = "Debug Dashboard",
+                    )
+                }
+            },
+        ) { paddingValues ->
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+            ) {
+                commandScreen(viewModel = viewModel)
             }
         }
     }
@@ -89,9 +125,13 @@ class MainActivity : ComponentActivity() {
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            uiState.error?.let { error ->
-                errorCard(error = error)
-                Spacer(modifier = Modifier.height(16.dp))
+            uiState.error?.let { errorState ->
+                errorCard(
+                    errorState = errorState,
+                    onRetry = { viewModel.retryLastFailedCommand() },
+                    onDismiss = { viewModel.handleIntent(CommandIntent.ClearError) },
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
             }
 
             uiState.lastResponse?.let { response ->
@@ -113,6 +153,7 @@ class MainActivity : ComponentActivity() {
             is CommandEffect.ShowToast -> {
                 Toast.makeText(this, effect.message, Toast.LENGTH_SHORT).show()
             }
+
             is CommandEffect.ShowError -> {
                 Toast
                     .makeText(
@@ -121,6 +162,7 @@ class MainActivity : ComponentActivity() {
                         Toast.LENGTH_LONG,
                     ).show()
             }
+
             is CommandEffect.ShowSuccess -> {
                 Toast.makeText(this, effect.message, Toast.LENGTH_SHORT).show()
             }
