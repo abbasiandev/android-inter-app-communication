@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <permission
+        android:name="dev.locationapp.permission.ACCESS_LOCATION_COMMANDS"
+        android:protectionLevel="signature"
+        android:description="@string/permission_description"
+        android:label="@string/permission_label" />
+
+    <application>
+        <provider
+            android:name="dev.locationapp.feature.command.presentation.provider.LocationCommandProvider"
+            android:authorities="dev.locationapp.provider"
+            android:enabled="true"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="dev.locationapp.permission.ACCESS_LOCATION_COMMANDS"
+            android:readPermission="dev.locationapp.permission.ACCESS_LOCATION_COMMANDS"
+            android:writePermission="dev.locationapp.permission.ACCESS_LOCATION_COMMANDS"
+            android:multiprocess="false" />
+    </application>
+</manifest>
