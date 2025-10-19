@@ -7,12 +7,15 @@ import android.os.Build
 import android.os.Bundle
 import dev.abbasian.protocol.data.constants.ProtocolConstants
 import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.CommandError
+import dev.abbasian.protocol.domain.model.CommandResult
 import dev.abbasian.protocol.domain.model.LocationCommand
 import dev.abbasian.protocol.domain.model.LocationData
 import dev.abbasian.protocol.domain.model.LocationResponse
 import dev.internetapp.feature.commandsender.domain.repository.CommandRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
@@ -22,7 +25,7 @@ class CommandRepositoryImpl(
 ) : CommandRepository {
     private val contentResolver: ContentResolver = context.contentResolver
 
-    override suspend fun sendCommand(command: LocationCommand): LocationResponse =
+    override suspend fun sendCommand(command: LocationCommand): CommandResult<LocationResponse> =
         withContext(Dispatchers.IO) {
             try {
                 logger.i(TAG, "Sending command: ${command.type}")
@@ -43,37 +46,82 @@ class CommandRepositoryImpl(
                         )
                     }
 
-                parseResponse(response)
+                val locationResponse = parseResponse(response)
+
+                when (locationResponse) {
+                    is LocationResponse.Error -> {
+                        logger.w(TAG, "Received error response: ${locationResponse.message}")
+                        CommandResult.Failure(
+                            CommandError.fromLocationResponse(locationResponse),
+                        )
+                    }
+                    else -> {
+                        logger.i(TAG, "Command successful: $locationResponse")
+                        CommandResult.Success(locationResponse)
+                    }
+                }
             } catch (e: IllegalArgumentException) {
                 logger.e(TAG, "ContentProvider not found", e)
-                createProviderNotFoundError()
+                CommandResult.Failure(CommandError.ProviderNotFound(throwable = e))
             } catch (e: TimeoutCancellationException) {
                 logger.e(TAG, "Command timeout", e)
-                createTimeoutError()
+                CommandResult.Failure(CommandError.Timeout(throwable = e))
             } catch (e: SecurityException) {
                 logger.e(TAG, "Permission denied", e)
-                createPermissionDeniedError()
+                CommandResult.Failure(CommandError.PermissionDenied(throwable = e))
+            } catch (e: Exception) {
+                logger.e(TAG, "Unexpected error", e)
+                CommandResult.Failure(
+                    CommandError.Unknown(
+                        message = e.message ?: "Unexpected error occurred",
+                        throwable = e,
+                    ),
+                )
             }
         }
 
-    private fun createProviderNotFoundError() =
-        LocationResponse.Error(
-            "Cannot connect to Location App. Ensure Location App is installed " +
-                "and both apps are signed with the same key.",
-            LocationResponse.ErrorCode.COMMUNICATION_ERROR,
-        )
+    override suspend fun sendCommandWithRetry(
+        command: LocationCommand,
+        maxRetries: Int,
+    ): CommandResult<LocationResponse> {
+        var attempt = 0
+        var lastError: CommandError? = null
 
-    private fun createTimeoutError() =
-        LocationResponse.Error(
-            "Command timeout after ${ProtocolConstants.COMMAND_TIMEOUT_MS}ms",
-            LocationResponse.ErrorCode.COMMUNICATION_ERROR,
-        )
+        while (attempt < maxRetries) {
+            attempt++
+            logger.d(TAG, "Attempt $attempt/$maxRetries for command: ${command.type}")
 
-    private fun createPermissionDeniedError() =
-        LocationResponse.Error(
-            "Permission denied. Ensure both apps are signed with the same key.",
-            LocationResponse.ErrorCode.PERMISSION_DENIED,
+            val result = sendCommand(command)
+
+            when (result) {
+                is CommandResult.Success -> {
+                    logger.i(TAG, "Command succeeded on attempt $attempt")
+                    return result
+                }
+                is CommandResult.Failure -> {
+                    lastError = result.error
+
+                    if (!result.error.isRecoverable) {
+                        logger.w(TAG, "Non-recoverable error, not retrying: ${result.error.message}")
+                        return result
+                    }
+
+                    if (attempt < maxRetries) {
+                        val delayMs = calculateBackoff(attempt)
+                        logger.i(TAG, "Retrying after ${delayMs}ms (attempt $attempt/$maxRetries)")
+                        delay(delayMs)
+                    }
+                }
+            }
+        }
+
+        logger.e(TAG, "Command failed after $maxRetries attempts")
+        return CommandResult.Failure(
+            lastError ?: CommandError.Unknown("Max retries exceeded"),
         )
+    }
+
+    private fun calculateBackoff(attempt: Int): Long = (1000L * (1 shl (attempt - 1))).coerceAtMost(5000L)
 
     private fun parseResponse(bundle: Bundle?): LocationResponse {
         if (bundle == null) {

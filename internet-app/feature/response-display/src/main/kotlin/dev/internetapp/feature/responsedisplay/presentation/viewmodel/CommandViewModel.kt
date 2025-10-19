@@ -11,6 +11,7 @@ import dev.internetapp.feature.commandsender.domain.usecase.StopServiceUseCase
 import dev.internetapp.feature.responsedisplay.domain.model.CommandEffect
 import dev.internetapp.feature.responsedisplay.domain.model.CommandIntent
 import dev.internetapp.feature.responsedisplay.domain.model.CommandUiState
+import dev.internetapp.feature.responsedisplay.domain.model.ErrorState
 import dev.internetapp.feature.responsedisplay.domain.model.ServiceStatus
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +35,8 @@ class CommandViewModel(
     private val _effect = Channel<CommandEffect>(Channel.BUFFERED)
     val effect: Flow<CommandEffect> = _effect.receiveAsFlow()
 
+    private var lastFailedCommand: (() -> Unit)? = null
+
     init {
         logger.d(TAG, "CommandViewModel initialized")
     }
@@ -50,154 +53,174 @@ class CommandViewModel(
         }
     }
 
+    fun retryLastFailedCommand() {
+        logger.d(TAG, "Retrying last failed command")
+        lastFailedCommand?.invoke()
+    }
+
     private fun startService() {
         viewModelScope.launch {
+            lastFailedCommand = { startService() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            when (val response = startServiceUseCase()) {
-                is LocationResponse.Success -> {
-                    logger.i(TAG, "Service started: ${response.message}")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            lastResponse = response.message,
-                            serviceStatus = ServiceStatus.RUNNING,
-                        )
+            val result = startServiceUseCase(useRetry = true)
+
+            result
+                .onSuccess { response ->
+                    when (response) {
+                        is LocationResponse.Success -> {
+                            logger.i(TAG, "Service started: ${response.message}")
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    lastResponse = response.message,
+                                    serviceStatus = ServiceStatus.RUNNING,
+                                    error = null,
+                                )
+                            }
+                            _effect.send(CommandEffect.ShowSuccess("${response.message}"))
+                            lastFailedCommand = null
+                        }
+                        else -> {
+                            _uiState.update { it.copy(isLoading = false) }
+                        }
                     }
-                    _effect.send(CommandEffect.ShowSuccess("Service started successfully"))
+                }.onFailure { error ->
+                    handleCommandError(error)
                 }
-                is LocationResponse.Error -> {
-                    logger.e(TAG, "Failed to start service: ${response.message}")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = response.message,
-                        )
-                    }
-                    _effect.send(CommandEffect.ShowError(response.message))
-                }
-                else -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                }
-            }
         }
     }
 
     private fun stopService() {
         viewModelScope.launch {
+            lastFailedCommand = { stopService() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            when (val response = stopServiceUseCase()) {
-                is LocationResponse.Success -> {
-                    logger.i(TAG, "Service stopped: ${response.message}")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            lastResponse = response.message,
-                            serviceStatus = ServiceStatus.STOPPED,
-                        )
+            val result = stopServiceUseCase(useRetry = true)
+
+            result
+                .onSuccess { response ->
+                    when (response) {
+                        is LocationResponse.Success -> {
+                            logger.i(TAG, "Service stopped: ${response.message}")
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    lastResponse = response.message,
+                                    serviceStatus = ServiceStatus.STOPPED,
+                                    error = null,
+                                )
+                            }
+                            _effect.send(CommandEffect.ShowSuccess("${response.message}"))
+                            lastFailedCommand = null
+                        }
+                        else -> {
+                            _uiState.update { it.copy(isLoading = false) }
+                        }
                     }
-                    _effect.send(CommandEffect.ShowSuccess("Service stopped successfully"))
+                }.onFailure { error ->
+                    handleCommandError(error)
                 }
-                is LocationResponse.Error -> {
-                    logger.e(TAG, "Failed to stop service: ${response.message}")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = response.message,
-                        )
-                    }
-                    _effect.send(CommandEffect.ShowError(response.message))
-                }
-                else -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                }
-            }
         }
     }
 
     private fun getAllLocations() {
         viewModelScope.launch {
+            lastFailedCommand = { getAllLocations() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            when (val response = getAllLocationsUseCase()) {
-                is LocationResponse.LocationList -> {
-                    logger.i(TAG, "Received ${response.locations.size} locations")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            locations = response.locations,
-                            lastResponse = "Retrieved ${response.locations.size} locations",
-                        )
+            val result = getAllLocationsUseCase(useRetry = true)
+
+            result
+                .onSuccess { response ->
+                    when (response) {
+                        is LocationResponse.LocationList -> {
+                            logger.i(TAG, "Received ${response.locations.size} locations")
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    locations = response.locations,
+                                    lastResponse = "Retrieved ${response.locations.size} locations",
+                                    error = null,
+                                )
+                            }
+                            _effect.send(
+                                CommandEffect.ShowToast("Retrieved ${response.locations.size} locations"),
+                            )
+                            lastFailedCommand = null
+                        }
+                        else -> {
+                            _uiState.update { it.copy(isLoading = false, locations = emptyList()) }
+                        }
                     }
-                    _effect.send(
-                        CommandEffect.ShowToast(
-                            "Retrieved ${response.locations.size} locations",
-                        ),
-                    )
+                }.onFailure { error ->
+                    _uiState.update { it.copy(locations = emptyList()) }
+                    handleCommandError(error)
                 }
-                is LocationResponse.Error -> {
-                    logger.w(TAG, "Failed to get locations: ${response.message}")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = response.message,
-                            locations = emptyList(),
-                        )
-                    }
-                    _effect.send(CommandEffect.ShowError(response.message))
-                }
-                else -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                }
-            }
         }
     }
 
     private fun getLatestLocation() {
         viewModelScope.launch {
+            lastFailedCommand = { getLatestLocation() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            when (val response = getLatestLocationUseCase()) {
-                is LocationResponse.SingleLocation -> {
-                    logger.i(TAG, "Received latest location: ${response.location}")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            latestLocation = response.location,
-                            lastResponse =
-                                if (response.location != null) {
-                                    "Latest: ${response.location!!.getCoordinatesString()}"
-                                } else {
-                                    "No location available"
-                                },
-                        )
+            val result = getLatestLocationUseCase(useRetry = true)
+
+            result
+                .onSuccess { response ->
+                    when (response) {
+                        is LocationResponse.SingleLocation -> {
+                            logger.i(TAG, "Received latest location: ${response.location}")
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    latestLocation = response.location,
+                                    lastResponse =
+                                        if (response.location != null) {
+                                            "Latest: ${response.location?.getCoordinatesString()}"
+                                        } else {
+                                            "No location available"
+                                        },
+                                    error = null,
+                                )
+                            }
+                            _effect.send(CommandEffect.ShowToast("Latest location retrieved"))
+                            lastFailedCommand = null
+                        }
+                        else -> {
+                            _uiState.update { it.copy(isLoading = false, latestLocation = null) }
+                        }
                     }
-                    _effect.send(CommandEffect.ShowToast("Latest location retrieved"))
+                }.onFailure { error ->
+                    _uiState.update { it.copy(latestLocation = null) }
+                    handleCommandError(error)
                 }
-                is LocationResponse.Error -> {
-                    logger.w(TAG, "Failed to get latest location: ${response.message}")
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = response.message,
-                            latestLocation = null,
-                        )
-                    }
-                    _effect.send(CommandEffect.ShowError(response.message))
-                }
-                else -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                }
-            }
         }
     }
 
+    private suspend fun handleCommandError(error: dev.abbasian.protocol.domain.model.CommandError) {
+        logger.e(TAG, "Command failed: ${error.message}", error.throwable)
+
+        val errorState = ErrorState.from(error)
+
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                error = errorState,
+            )
+        }
+
+        _effect.send(CommandEffect.ShowError(error.message))
+    }
+
     private fun clearError() {
+        logger.d(TAG, "Clearing error state")
         _uiState.update { it.copy(error = null) }
     }
 
     private fun clearResponse() {
+        logger.d(TAG, "Clearing response data")
         _uiState.update {
             it.copy(
                 lastResponse = null,

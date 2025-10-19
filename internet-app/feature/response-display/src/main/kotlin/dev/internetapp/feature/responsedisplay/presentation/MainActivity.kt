@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.internetapp.feature.responsedisplay.domain.model.CommandEffect
+import dev.internetapp.feature.responsedisplay.domain.model.CommandIntent
 import dev.internetapp.feature.responsedisplay.presentation.components.controlButtons
 import dev.internetapp.feature.responsedisplay.presentation.components.errorCard
 import dev.internetapp.feature.responsedisplay.presentation.components.lastResponseCard
@@ -89,9 +90,13 @@ class MainActivity : ComponentActivity() {
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            uiState.error?.let { error ->
-                errorCard(error = error)
-                Spacer(modifier = Modifier.height(16.dp))
+            uiState.error?.let { errorState ->
+                errorCard(
+                    errorState = errorState,
+                    onRetry = { viewModel.retryLastFailedCommand() },
+                    onDismiss = { viewModel.handleIntent(CommandIntent.ClearError) },
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
             }
 
             uiState.lastResponse?.let { response ->
@@ -113,6 +118,7 @@ class MainActivity : ComponentActivity() {
             is CommandEffect.ShowToast -> {
                 Toast.makeText(this, effect.message, Toast.LENGTH_SHORT).show()
             }
+
             is CommandEffect.ShowError -> {
                 Toast
                     .makeText(
@@ -121,6 +127,7 @@ class MainActivity : ComponentActivity() {
                         Toast.LENGTH_LONG,
                     ).show()
             }
+
             is CommandEffect.ShowSuccess -> {
                 Toast.makeText(this, effect.message, Toast.LENGTH_SHORT).show()
             }
