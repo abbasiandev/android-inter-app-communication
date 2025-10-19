@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package dev.locationapp.feature.location.data.repository
 
 import dev.abbasian.protocol.domain.logger.AppLogger

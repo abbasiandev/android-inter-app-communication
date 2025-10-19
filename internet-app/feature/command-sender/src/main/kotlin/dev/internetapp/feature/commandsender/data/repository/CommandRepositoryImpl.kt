@@ -25,6 +25,7 @@ class CommandRepositoryImpl(
 ) : CommandRepository {
     private val contentResolver: ContentResolver = context.contentResolver
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun sendCommand(command: LocationCommand): CommandResult<LocationResponse> =
         withContext(Dispatchers.IO) {
             try {

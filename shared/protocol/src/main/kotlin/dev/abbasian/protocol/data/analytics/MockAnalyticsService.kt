@@ -21,11 +21,9 @@ class MockAnalyticsService(
     private val logger: AppLogger,
     private val enableLogging: Boolean = true,
 ) : IAnalyticsService {
-    @Suppress("ktlint:standard:backing-property-naming")
-    private val _events = MutableStateFlow<List<AnalyticsEvent>>(emptyList())
+    private val events = MutableStateFlow<List<AnalyticsEvent>>(emptyList())
 
-    @Suppress("ktlint:standard:backing-property-naming")
-    private val _metrics = MutableStateFlow<List<PerformanceMetric>>(emptyList())
+    private val metrics = MutableStateFlow<List<PerformanceMetric>>(emptyList())
     private val userProperties = ConcurrentHashMap<String, String>()
 
     private val eventCounts = ConcurrentHashMap<String, Int>()
@@ -36,7 +34,7 @@ class MockAnalyticsService(
             logger.i(TAG, "Event: ${event.eventName} | Properties: ${event.properties}")
         }
 
-        _events.value = _events.value + event
+        events.value = events.value + event
 
         eventCounts[event.eventName] = (eventCounts[event.eventName] ?: 0) + 1
 
@@ -51,7 +49,7 @@ class MockAnalyticsService(
             )
         }
 
-        _metrics.value = _metrics.value + metric
+        metrics.value = metrics.value + metric
 
         metricValues.getOrPut(metric.metricName) { mutableListOf() }.add(metric.value)
 
@@ -102,10 +100,10 @@ class MockAnalyticsService(
         }
     }
 
-    override fun getTrackedEvents(): Flow<List<AnalyticsEvent>> = _events.asStateFlow()
+    override fun getTrackedEvents(): Flow<List<AnalyticsEvent>> = events.asStateFlow()
 
     override fun getPerformanceStats(metricName: String): Flow<PerformanceStats> =
-        _metrics.asStateFlow().map { metrics ->
+        metrics.asStateFlow().map { metrics ->
             val values =
                 metrics
                     .filter { it.metricName == metricName }
@@ -138,8 +136,8 @@ class MockAnalyticsService(
         }
 
     override suspend fun clearData() {
-        _events.value = emptyList()
-        _metrics.value = emptyList()
+        events.value = emptyList()
+        metrics.value = emptyList()
         eventCounts.clear()
         metricValues.clear()
         userProperties.clear()
@@ -150,7 +148,7 @@ class MockAnalyticsService(
         val json = JSONObject()
 
         val eventsArray = JSONArray()
-        _events.value.forEach { event ->
+        events.value.forEach { event ->
             val eventJson =
                 JSONObject().apply {
                     put("event_name", event.eventName)
@@ -162,7 +160,7 @@ class MockAnalyticsService(
         json.put("events", eventsArray)
 
         val metricsArray = JSONArray()
-        _metrics.value.forEach { metric ->
+        metrics.value.forEach { metric ->
             val metricJson =
                 JSONObject().apply {
                     put("metric_name", metric.metricName)
@@ -194,8 +192,8 @@ class MockAnalyticsService(
     }
 
     fun getSummary(): String {
-        val totalEvents = _events.value.size
-        val totalMetrics = _metrics.value.size
+        val totalEvents = events.value.size
+        val totalMetrics = metrics.value.size
         val uniqueEvents = eventCounts.size
 
         return buildString {

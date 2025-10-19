@@ -1,3 +1,5 @@
+@file:Suppress("ImplicitDefaultLocale")
+
 package dev.abbasian.protocol.data.analytics
 
 import dev.abbasian.protocol.analytics.AnalyticsEvent
