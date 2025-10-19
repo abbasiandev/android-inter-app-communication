@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
+@file:Suppress("ktlint:standard:no-wildcard-imports", "ImplicitDefaultLocale")
 
 package dev.shared.debug.presentation.components
 
@@ -73,7 +73,7 @@ fun systemInfoCard() {
                     .padding(16.dp),
         ) {
             Text(
-                text = "💻 System Information",
+                text = "System Information",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )

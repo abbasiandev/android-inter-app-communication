@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package dev.locationapp.di
 
 import dagger.Module

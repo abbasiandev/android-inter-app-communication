@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
+@file:Suppress("ktlint:standard:no-wildcard-imports", "LongMethod")
 
 package dev.shared.debug.presentation.components
 
@@ -226,6 +226,7 @@ private fun RowScope.statItem(
     }
 }
 
+@Suppress("ImplicitDefaultLocale")
 private fun formatValue(
     value: Double,
     unit: String,
