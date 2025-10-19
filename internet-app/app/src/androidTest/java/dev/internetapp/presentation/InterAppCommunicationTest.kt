@@ -4,8 +4,8 @@ import android.content.ContentResolver
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.abbasian.protocol.domain.model.CommandResult
 import dev.abbasian.protocol.domain.model.LocationCommand
-import dev.abbasian.protocol.domain.model.LocationResponse
 import dev.internetapp.feature.commandsender.data.repository.CommandRepositoryImpl
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -30,19 +30,20 @@ class InterAppCommunicationTest {
     @Test
     fun `sendStartServiceCommandAndReceiveSuccessResponse`() =
         runTest {
-            val response = repository.sendCommand(LocationCommand.StartService)
+            val result = repository.sendCommand(LocationCommand.StartService)
 
-            Assert.assertTrue(response is LocationResponse.Success || response is LocationResponse.Error)
+            Assert.assertTrue(
+                result is CommandResult.Success || result is CommandResult.Failure,
+            )
         }
 
     @Test
     fun `sendGetLocationsCommandReturnsLocationList`() =
         runTest {
-            val response = repository.sendCommand(LocationCommand.GetAllLocations)
+            val result = repository.sendCommand(LocationCommand.GetAllLocations)
 
             Assert.assertTrue(
-                response is LocationResponse.LocationList ||
-                    response is LocationResponse.Error,
+                result is CommandResult.Success || result is CommandResult.Failure,
             )
         }
 }

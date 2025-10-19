@@ -1,5 +1,6 @@
 package dev.internetapp.feature.responsedisplay.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -14,8 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,8 +57,37 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    commandScreen(viewModel = viewModel)
+                    mainScreenWithFab(viewModel = viewModel)
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun mainScreenWithFab(viewModel: CommandViewModel) {
+        Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = {
+                        startActivity(Intent(this@MainActivity, InternetDebugActivity::class.java))
+                    },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BugReport,
+                        contentDescription = "Debug Dashboard",
+                    )
+                }
+            },
+        ) { paddingValues ->
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+            ) {
+                commandScreen(viewModel = viewModel)
             }
         }
     }

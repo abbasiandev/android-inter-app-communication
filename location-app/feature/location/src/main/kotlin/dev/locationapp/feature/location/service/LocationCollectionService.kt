@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
+import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -25,6 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.abbasian.protocol.data.constants.ProtocolConstants
 import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.abbasian.protocol.domain.model.LocationData
+import dev.locationapp.analytics.LocationAppAnalytics
 import dev.locationapp.feature.location.domain.usecase.SaveLocationUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +34,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 
@@ -42,6 +45,9 @@ class LocationCollectionService : Service() {
 
     @Inject
     lateinit var logger: AppLogger
+
+    @Inject
+    lateinit var analytics: LocationAppAnalytics
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -87,6 +93,8 @@ class LocationCollectionService : Service() {
         }
 
         logger.i(TAG, "Starting location collection")
+        analytics.trackServiceStarted()
+
         startForeground(ProtocolConstants.SERVICE_NOTIFICATION_ID, createNotification())
         startLocationUpdates()
         isCollecting = true
@@ -99,6 +107,8 @@ class LocationCollectionService : Service() {
         }
 
         logger.i(TAG, "Stopping location collection")
+        analytics.trackServiceStopped()
+
         stopLocationUpdates()
         isCollecting = false
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -155,7 +165,7 @@ class LocationCollectionService : Service() {
             .requestLocationUpdates(
                 locationRequest,
                 locationCallback,
-                null,
+                Looper.getMainLooper(),
             ).addOnSuccessListener {
                 logger.i(TAG, "Location updates started successfully")
                 updateNotification("Location tracking active")
@@ -172,6 +182,8 @@ class LocationCollectionService : Service() {
 
     private fun saveLocation(location: Location) {
         serviceScope.launch {
+            val saveStartTime = System.currentTimeMillis()
+
             try {
                 val locationData =
                     LocationData(
@@ -183,16 +195,28 @@ class LocationCollectionService : Service() {
                         provider = location.provider ?: "unknown",
                     )
 
+                analytics.trackLocationCollected(locationData)
+
                 saveLocationUseCase(locationData)
+
+                val saveDuration = System.currentTimeMillis() - saveStartTime
                 logger.d(TAG, "Location saved successfully")
+
+                analytics.trackLocationSaved(success = true, durationMs = saveDuration)
             } catch (e: IllegalArgumentException) {
+                val saveDuration = System.currentTimeMillis() - saveStartTime
                 logger.e(TAG, "Invalid location data", e)
+                analytics.trackLocationSaved(success = false, durationMs = saveDuration)
                 handleSaveError(e)
             } catch (e: IllegalStateException) {
+                val saveDuration = System.currentTimeMillis() - saveStartTime
                 logger.e(TAG, "Error saving location", e)
+                analytics.trackLocationSaved(success = false, durationMs = saveDuration)
                 handleSaveError(e)
             } catch (e: Exception) {
+                val saveDuration = System.currentTimeMillis() - saveStartTime
                 logger.e(TAG, "Unexpected error saving location", e)
+                analytics.trackLocationSaved(success = false, durationMs = saveDuration)
                 handleSaveError(e)
             }
         }
@@ -258,7 +282,9 @@ class LocationCollectionService : Service() {
 
             if (isCollecting) {
                 logger.i(TAG, "Retrying location updates")
-                startLocationUpdates()
+                withContext(Dispatchers.Main) {
+                    startLocationUpdates()
+                }
             }
         }
     }
@@ -344,6 +370,8 @@ class LocationCollectionService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         logger.i(TAG, "Service destroyed")
+        analytics.trackMemoryUsage()
+
         stopLocationUpdates()
         serviceScope.cancel()
     }

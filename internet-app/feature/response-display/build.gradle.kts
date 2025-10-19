@@ -35,6 +35,7 @@ dependencies {
     implementation(project(":internet-app:feature:command-sender"))
     implementation(project(":internet-app:core:common"))
     implementation(project(":shared:protocol"))
+    implementation(project(":shared:debug"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)

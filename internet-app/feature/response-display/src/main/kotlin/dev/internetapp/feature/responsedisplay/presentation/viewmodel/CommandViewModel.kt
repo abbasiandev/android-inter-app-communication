@@ -3,7 +3,10 @@ package dev.internetapp.feature.responsedisplay.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.CommandError
+import dev.abbasian.protocol.domain.model.LocationCommand
 import dev.abbasian.protocol.domain.model.LocationResponse
+import dev.internetapp.core.common.analytics.InternetAppAnalytics
 import dev.internetapp.feature.commandsender.domain.usecase.GetAllLocationsUseCase
 import dev.internetapp.feature.commandsender.domain.usecase.GetLatestLocationUseCase
 import dev.internetapp.feature.commandsender.domain.usecase.StartServiceUseCase
@@ -28,6 +31,7 @@ class CommandViewModel(
     private val getAllLocationsUseCase: GetAllLocationsUseCase,
     private val getLatestLocationUseCase: GetLatestLocationUseCase,
     private val logger: AppLogger,
+    private val analytics: InternetAppAnalytics,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CommandUiState())
     val uiState: StateFlow<CommandUiState> = _uiState.asStateFlow()
@@ -36,18 +40,42 @@ class CommandViewModel(
     val effect: Flow<CommandEffect> = _effect.receiveAsFlow()
 
     private var lastFailedCommand: (() -> Unit)? = null
+    private var sessionStartTime = System.currentTimeMillis()
 
     init {
         logger.d(TAG, "CommandViewModel initialized")
+        analytics.trackAppLaunched()
+        analytics.trackScreenView("MainActivity")
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(5000)
+            analytics.trackMemoryUsage()
+        }
     }
 
     fun handleIntent(intent: CommandIntent) {
         logger.d(TAG, "Handling intent: ${intent::class.simpleName}")
         when (intent) {
-            is CommandIntent.StartService -> startService()
-            is CommandIntent.StopService -> stopService()
-            is CommandIntent.GetAllLocations -> getAllLocations()
-            is CommandIntent.GetLatestLocation -> getLatestLocation()
+            is CommandIntent.StartService -> {
+                analytics.trackButtonClick("start_service")
+                startService()
+            }
+
+            is CommandIntent.StopService -> {
+                analytics.trackButtonClick("stop_service")
+                stopService()
+            }
+
+            is CommandIntent.GetAllLocations -> {
+                analytics.trackButtonClick("get_all_locations")
+                getAllLocations()
+            }
+
+            is CommandIntent.GetLatestLocation -> {
+                analytics.trackButtonClick("get_latest_location")
+                getLatestLocation()
+            }
+
             is CommandIntent.ClearError -> clearError()
             is CommandIntent.ClearResponse -> clearResponse()
         }
@@ -55,6 +83,7 @@ class CommandViewModel(
 
     fun retryLastFailedCommand() {
         logger.d(TAG, "Retrying last failed command")
+        analytics.trackButtonClick("retry")
         lastFailedCommand?.invoke()
     }
 
@@ -63,13 +92,21 @@ class CommandViewModel(
             lastFailedCommand = { startService() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
+            val startTime = System.currentTimeMillis()
             val result = startServiceUseCase(useRetry = true)
+            val duration = System.currentTimeMillis() - startTime
 
             result
                 .onSuccess { response ->
                     when (response) {
                         is LocationResponse.Success -> {
                             logger.i(TAG, "Service started: ${response.message}")
+                            analytics.trackCommandSent(
+                                command = LocationCommand.StartService,
+                                durationMs = duration,
+                                success = true,
+                            )
+
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
@@ -78,14 +115,21 @@ class CommandViewModel(
                                     error = null,
                                 )
                             }
-                            _effect.send(CommandEffect.ShowSuccess("${response.message}"))
+                            _effect.send(CommandEffect.ShowSuccess(response.message))
                             lastFailedCommand = null
                         }
+
                         else -> {
                             _uiState.update { it.copy(isLoading = false) }
                         }
                     }
                 }.onFailure { error ->
+                    analytics.trackCommandSent(
+                        command = LocationCommand.StartService,
+                        durationMs = duration,
+                        success = false,
+                    )
+                    analytics.trackCommandFailed(LocationCommand.StartService, error)
                     handleCommandError(error)
                 }
         }
@@ -96,13 +140,21 @@ class CommandViewModel(
             lastFailedCommand = { stopService() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
+            val startTime = System.currentTimeMillis()
             val result = stopServiceUseCase(useRetry = true)
+            val duration = System.currentTimeMillis() - startTime
 
             result
                 .onSuccess { response ->
                     when (response) {
                         is LocationResponse.Success -> {
                             logger.i(TAG, "Service stopped: ${response.message}")
+                            analytics.trackCommandSent(
+                                command = LocationCommand.StopService,
+                                durationMs = duration,
+                                success = true,
+                            )
+
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
@@ -111,14 +163,21 @@ class CommandViewModel(
                                     error = null,
                                 )
                             }
-                            _effect.send(CommandEffect.ShowSuccess("${response.message}"))
+                            _effect.send(CommandEffect.ShowSuccess(response.message))
                             lastFailedCommand = null
                         }
+
                         else -> {
                             _uiState.update { it.copy(isLoading = false) }
                         }
                     }
                 }.onFailure { error ->
+                    analytics.trackCommandSent(
+                        command = LocationCommand.StopService,
+                        durationMs = duration,
+                        success = false,
+                    )
+                    analytics.trackCommandFailed(LocationCommand.StopService, error)
                     handleCommandError(error)
                 }
         }
@@ -129,13 +188,21 @@ class CommandViewModel(
             lastFailedCommand = { getAllLocations() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
+            val startTime = System.currentTimeMillis()
             val result = getAllLocationsUseCase(useRetry = true)
+            val duration = System.currentTimeMillis() - startTime
 
             result
                 .onSuccess { response ->
                     when (response) {
                         is LocationResponse.LocationList -> {
                             logger.i(TAG, "Received ${response.locations.size} locations")
+                            analytics.trackCommandSent(
+                                command = LocationCommand.GetAllLocations,
+                                durationMs = duration,
+                                success = true,
+                            )
+
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
@@ -149,11 +216,18 @@ class CommandViewModel(
                             )
                             lastFailedCommand = null
                         }
+
                         else -> {
                             _uiState.update { it.copy(isLoading = false, locations = emptyList()) }
                         }
                     }
                 }.onFailure { error ->
+                    analytics.trackCommandSent(
+                        command = LocationCommand.GetAllLocations,
+                        durationMs = duration,
+                        success = false,
+                    )
+                    analytics.trackCommandFailed(LocationCommand.GetAllLocations, error)
                     _uiState.update { it.copy(locations = emptyList()) }
                     handleCommandError(error)
                 }
@@ -165,13 +239,21 @@ class CommandViewModel(
             lastFailedCommand = { getLatestLocation() }
             _uiState.update { it.copy(isLoading = true, error = null) }
 
+            val startTime = System.currentTimeMillis()
             val result = getLatestLocationUseCase(useRetry = true)
+            val duration = System.currentTimeMillis() - startTime
 
             result
                 .onSuccess { response ->
                     when (response) {
                         is LocationResponse.SingleLocation -> {
                             logger.i(TAG, "Received latest location: ${response.location}")
+                            analytics.trackCommandSent(
+                                command = LocationCommand.GetLatestLocation,
+                                durationMs = duration,
+                                success = true,
+                            )
+
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
@@ -188,21 +270,30 @@ class CommandViewModel(
                             _effect.send(CommandEffect.ShowToast("Latest location retrieved"))
                             lastFailedCommand = null
                         }
+
                         else -> {
                             _uiState.update { it.copy(isLoading = false, latestLocation = null) }
                         }
                     }
                 }.onFailure { error ->
+                    analytics.trackCommandSent(
+                        command = LocationCommand.GetLatestLocation,
+                        durationMs = duration,
+                        success = false,
+                    )
+                    analytics.trackCommandFailed(LocationCommand.GetLatestLocation, error)
                     _uiState.update { it.copy(latestLocation = null) }
                     handleCommandError(error)
                 }
         }
     }
 
-    private suspend fun handleCommandError(error: dev.abbasian.protocol.domain.model.CommandError) {
+    private suspend fun handleCommandError(error: CommandError) {
         logger.e(TAG, "Command failed: ${error.message}", error.throwable)
 
         val errorState = ErrorState.from(error)
+
+        analytics.trackErrorDisplayed(error, errorState.canRetry)
 
         _uiState.update {
             it.copy(
@@ -228,6 +319,13 @@ class CommandViewModel(
                 latestLocation = null,
             )
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        val sessionDuration = System.currentTimeMillis() - sessionStartTime
+        analytics.trackAppLaunched()
+        logger.d(TAG, "ViewModel cleared, session duration: ${sessionDuration}ms")
     }
 
     companion object {

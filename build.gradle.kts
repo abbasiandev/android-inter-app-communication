@@ -29,7 +29,14 @@ subprojects {
     }
 
     tasks.register<JacocoReport>("jacocoTestReport") {
-        dependsOn("testDebugUnitTest", "test")
+        val testTasks = mutableListOf<String>()
+        if (tasks.findByName("testDebugUnitTest") != null) {
+            testTasks.add("testDebugUnitTest")
+        }
+        if (tasks.findByName("test") != null) {
+            testTasks.add("test")
+        }
+        dependsOn(testTasks)
 
         reports {
             xml.required.set(true)

@@ -1,7 +1,9 @@
 package dev.locationapp.feature.location.data.repository
 
 import app.cash.turbine.test
+import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.abbasian.protocol.domain.model.LocationData
+import dev.locationapp.analytics.LocationAppAnalytics
 import dev.locationapp.core.security.data.CryptoManager
 import dev.locationapp.core.security.domain.EncryptedData
 import dev.locationapp.feature.location.data.local.LocationDao
@@ -25,12 +27,16 @@ class LocationRepositoryImplTest {
     private lateinit var repository: LocationRepositoryImpl
     private lateinit var locationDao: LocationDao
     private lateinit var cryptoManager: CryptoManager
+    private lateinit var logger: AppLogger
+    private lateinit var analytics: LocationAppAnalytics
 
     @Before
     fun setup() {
-        locationDao = mockk()
-        cryptoManager = mockk()
-        repository = LocationRepositoryImpl(locationDao, cryptoManager)
+        locationDao = mockk(relaxed = true)
+        cryptoManager = mockk(relaxed = true)
+        logger = mockk(relaxed = true)
+        analytics = mockk(relaxed = true)
+        repository = LocationRepositoryImpl(locationDao, cryptoManager, logger, analytics)
     }
 
     @After
@@ -81,7 +87,18 @@ class LocationRepositoryImplTest {
                 )
 
             every { locationDao.getAllLocations() } returns flowOf(listOf(entity))
-            every { cryptoManager.decrypt(any()) } returnsMany listOf("48.8566", "2.3522")
+
+            every {
+                cryptoManager.decrypt(
+                    match { it.data.contentEquals(byteArrayOf(1, 2, 3)) },
+                )
+            } returns "48.8566"
+
+            every {
+                cryptoManager.decrypt(
+                    match { it.data.contentEquals(byteArrayOf(7, 8, 9)) },
+                )
+            } returns "2.3522"
 
             repository.getAllLocations().test {
                 val locations = awaitItem()

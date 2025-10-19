@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.locationapp.feature.location.domain.usecase.GetAllLocationsUseCase
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,8 +29,12 @@ class LocationListViewModel
             loadLocations()
         }
 
-        private fun loadLocations() {
+        private fun loadLocations(showLoading: Boolean = false) {
             viewModelScope.launch {
+                if (showLoading) {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
+
                 getAllLocationsUseCase()
                     .catch { e ->
                         logger.e(TAG, "Failed to load locations", e)
@@ -41,6 +46,11 @@ class LocationListViewModel
                         }
                     }.collect { locations ->
                         logger.d(TAG, "Loaded ${locations.size} locations")
+
+                        if (showLoading) {
+                            delay(300)
+                        }
+
                         _uiState.update {
                             it.copy(
                                 locations = locations,
@@ -55,8 +65,7 @@ class LocationListViewModel
 
         fun refresh() {
             logger.i(TAG, "Refreshing locations")
-            _uiState.update { it.copy(isLoading = true) }
-            loadLocations()
+            loadLocations(showLoading = true)
         }
 
         fun clearError() {

@@ -8,6 +8,7 @@ import dev.abbasian.protocol.data.constants.ProtocolConstants
 import dev.abbasian.protocol.domain.logger.AppLogger
 import dev.abbasian.protocol.domain.model.LocationData
 import dev.abbasian.protocol.domain.model.LocationResponse
+import dev.locationapp.analytics.LocationAppAnalytics
 import dev.locationapp.feature.location.domain.repository.LocationRepository
 import dev.locationapp.feature.location.service.LocationCollectionService
 import kotlinx.coroutines.flow.first
@@ -19,10 +20,13 @@ class CommandHandlers(
     private val context: Context,
     private val repository: LocationRepository,
     private val logger: AppLogger,
+    private val analytics: LocationAppAnalytics,
     private val coroutineContext: CoroutineContext,
 ) {
-    fun handleStartService(): Bundle =
-        try {
+    fun handleStartService(): Bundle {
+        val startTime = System.currentTimeMillis()
+
+        return try {
             val intent =
                 Intent(context, LocationCollectionService::class.java).apply {
                     action = LocationCollectionService.ACTION_START_COLLECTION
@@ -32,46 +36,74 @@ class CommandHandlers(
             } else {
                 context.startService(intent)
             }
-            logger.i(TAG, "Service start command executed")
+
+            val duration = System.currentTimeMillis() - startTime
+            logger.i(TAG, "Service start command executed in ${duration}ms")
+
+            analytics.trackCommandReceived("START_SERVICE", duration)
+
             BundleFactory.createSuccessBundle("Location service started successfully")
         } catch (e: SecurityException) {
+            val duration = System.currentTimeMillis() - startTime
             logger.e(TAG, "Permission denied to start service", e)
+            analytics.trackCommandReceived("START_SERVICE_FAILED", duration)
+
             BundleFactory.createErrorBundle(
                 "Permission denied to start location service",
                 LocationResponse.ErrorCode.PERMISSION_DENIED,
             )
         } catch (e: Exception) {
+            val duration = System.currentTimeMillis() - startTime
             logger.e(TAG, "Failed to start service", e)
+            analytics.trackCommandReceived("START_SERVICE_FAILED", duration)
+
             BundleFactory.createErrorBundle(
                 "Failed to start service: ${e.message}",
                 LocationResponse.ErrorCode.INTERNAL_ERROR,
             )
         }
+    }
 
-    fun handleStopService(): Bundle =
-        try {
+    fun handleStopService(): Bundle {
+        val startTime = System.currentTimeMillis()
+
+        return try {
             val intent =
                 Intent(context, LocationCollectionService::class.java).apply {
                     action = LocationCollectionService.ACTION_STOP_COLLECTION
                 }
             context.startService(intent)
-            logger.i(TAG, "Service stop command executed")
+
+            val duration = System.currentTimeMillis() - startTime
+            logger.i(TAG, "Service stop command executed in ${duration}ms")
+
+            analytics.trackCommandReceived("STOP_SERVICE", duration)
+
             BundleFactory.createSuccessBundle("Location service stopped successfully")
         } catch (e: Exception) {
+            val duration = System.currentTimeMillis() - startTime
             logger.e(TAG, "Failed to stop service", e)
+            analytics.trackCommandReceived("STOP_SERVICE_FAILED", duration)
+
             BundleFactory.createErrorBundle(
                 "Failed to stop service: ${e.message}",
                 LocationResponse.ErrorCode.INTERNAL_ERROR,
             )
         }
+    }
 
     fun handleGetAllLocations(): Bundle =
         runBlocking(coroutineContext) {
+            val startTime = System.currentTimeMillis()
+
             try {
                 val locations =
                     withTimeout(5000L) {
                         repository.getAllLocations().first()
                     }
+
+                val duration = System.currentTimeMillis() - startTime
+                analytics.trackCommandReceived("GET_ALL_LOCATIONS", duration)
 
                 if (locations.isEmpty()) {
                     logger.w(TAG, "No locations available")
@@ -80,17 +112,23 @@ class CommandHandlers(
                         LocationResponse.ErrorCode.NO_LOCATION_AVAILABLE,
                     )
                 } else {
-                    logger.i(TAG, "Returning ${locations.size} locations")
+                    logger.i(TAG, "Returning ${locations.size} locations in ${duration}ms")
                     BundleFactory.createLocationListBundle(locations)
                 }
             } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                val duration = System.currentTimeMillis() - startTime
                 logger.e(TAG, "Timeout getting locations", e)
+                analytics.trackCommandReceived("GET_ALL_LOCATIONS_TIMEOUT", duration)
+
                 BundleFactory.createErrorBundle(
                     "Database query timed out",
                     LocationResponse.ErrorCode.INTERNAL_ERROR,
                 )
             } catch (e: Exception) {
+                val duration = System.currentTimeMillis() - startTime
                 logger.e(TAG, "Error getting all locations", e)
+                analytics.trackCommandReceived("GET_ALL_LOCATIONS_FAILED", duration)
+
                 BundleFactory.createErrorBundle(
                     "Failed to retrieve locations: ${e.message}",
                     LocationResponse.ErrorCode.INTERNAL_ERROR,
@@ -100,11 +138,16 @@ class CommandHandlers(
 
     fun handleGetLatestLocation(): Bundle =
         runBlocking(coroutineContext) {
+            val startTime = System.currentTimeMillis()
+
             try {
                 val location =
                     withTimeout(3000L) {
                         repository.getLatestLocation()
                     }
+
+                val duration = System.currentTimeMillis() - startTime
+                analytics.trackCommandReceived("GET_LATEST_LOCATION", duration)
 
                 if (location == null) {
                     logger.w(TAG, "No latest location available")
@@ -113,17 +156,26 @@ class CommandHandlers(
                         LocationResponse.ErrorCode.NO_LOCATION_AVAILABLE,
                     )
                 } else {
-                    logger.i(TAG, "Returning latest location: ${location.getCoordinatesString()}")
+                    logger.i(
+                        TAG,
+                        "Returning latest location: ${location.getCoordinatesString()} in ${duration}ms",
+                    )
                     BundleFactory.createSingleLocationBundle(location)
                 }
             } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                val duration = System.currentTimeMillis() - startTime
                 logger.e(TAG, "Timeout getting latest location", e)
+                analytics.trackCommandReceived("GET_LATEST_LOCATION_TIMEOUT", duration)
+
                 BundleFactory.createErrorBundle(
                     "Database query timed out",
                     LocationResponse.ErrorCode.INTERNAL_ERROR,
                 )
             } catch (e: Exception) {
+                val duration = System.currentTimeMillis() - startTime
                 logger.e(TAG, "Error getting latest location", e)
+                analytics.trackCommandReceived("GET_LATEST_LOCATION_FAILED", duration)
+
                 BundleFactory.createErrorBundle(
                     "Failed to retrieve latest location: ${e.message}",
                     LocationResponse.ErrorCode.INTERNAL_ERROR,

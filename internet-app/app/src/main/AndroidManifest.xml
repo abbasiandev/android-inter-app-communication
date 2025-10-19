@@ -33,6 +33,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".feature.responsedisplay.presentation.InternetDebugActivity"
+            android:exported="false"
+            android:label="Debug Dashboard"
+            android:theme="@style/Theme.InternetApp" />
+
     </application>
 
 </manifest>

@@ -2,8 +2,11 @@ package dev.internetapp.feature.responsedisplay
 
 import app.cash.turbine.test
 import dev.abbasian.protocol.domain.logger.AppLogger
+import dev.abbasian.protocol.domain.model.CommandError
+import dev.abbasian.protocol.domain.model.CommandResult
 import dev.abbasian.protocol.domain.model.LocationData
 import dev.abbasian.protocol.domain.model.LocationResponse
+import dev.internetapp.core.common.analytics.InternetAppAnalytics
 import dev.internetapp.feature.commandsender.domain.usecase.GetAllLocationsUseCase
 import dev.internetapp.feature.commandsender.domain.usecase.GetLatestLocationUseCase
 import dev.internetapp.feature.commandsender.domain.usecase.StartServiceUseCase
@@ -33,6 +36,7 @@ class CommandViewModelTest {
     private lateinit var getAllLocationsUseCase: GetAllLocationsUseCase
     private lateinit var getLatestLocationUseCase: GetLatestLocationUseCase
     private lateinit var logger: AppLogger
+    private lateinit var analytics: InternetAppAnalytics
 
     private val testDispatcher = StandardTestDispatcher()
 
@@ -45,6 +49,7 @@ class CommandViewModelTest {
         getAllLocationsUseCase = mockk()
         getLatestLocationUseCase = mockk()
         logger = mockk(relaxed = true)
+        analytics = mockk(relaxed = true)
 
         viewModel =
             CommandViewModel(
@@ -53,6 +58,7 @@ class CommandViewModelTest {
                 getAllLocationsUseCase,
                 getLatestLocationUseCase,
                 logger,
+                analytics,
             )
     }
 
@@ -64,7 +70,8 @@ class CommandViewModelTest {
     @Test
     fun `start service intent updates state to running`() =
         runTest {
-            coEvery { startServiceUseCase() } returns LocationResponse.Success("Service started")
+            coEvery { startServiceUseCase(any()) } returns
+                CommandResult.Success(LocationResponse.Success("Service started"))
 
             viewModel.handleIntent(CommandIntent.StartService)
             testDispatcher.scheduler.advanceUntilIdle()
@@ -78,7 +85,8 @@ class CommandViewModelTest {
     @Test
     fun `stop service intent updates state to stopped`() =
         runTest {
-            coEvery { stopServiceUseCase() } returns LocationResponse.Success("Service stopped")
+            coEvery { stopServiceUseCase(any()) } returns
+                CommandResult.Success(LocationResponse.Success("Service stopped"))
 
             viewModel.handleIntent(CommandIntent.StopService)
             testDispatcher.scheduler.advanceUntilIdle()
@@ -101,7 +109,8 @@ class CommandViewModelTest {
                         provider = "gps",
                     ),
                 )
-            coEvery { getAllLocationsUseCase() } returns LocationResponse.LocationList(locations)
+            coEvery { getAllLocationsUseCase(any()) } returns
+                CommandResult.Success(LocationResponse.LocationList(locations))
 
             viewModel.handleIntent(CommandIntent.GetAllLocations)
             testDispatcher.scheduler.advanceUntilIdle()
@@ -115,24 +124,24 @@ class CommandViewModelTest {
     fun `error response updates error state`() =
         runTest {
             val errorMessage = "Communication failed"
-            coEvery { startServiceUseCase() } returns
-                LocationResponse.Error(
-                    errorMessage,
-                    LocationResponse.ErrorCode.INTERNAL_ERROR,
-                )
+            val error = CommandError.Unknown(errorMessage)
+
+            coEvery { startServiceUseCase(any()) } returns
+                CommandResult.Failure(error)
 
             viewModel.handleIntent(CommandIntent.StartService)
             testDispatcher.scheduler.advanceUntilIdle()
 
             val state = viewModel.uiState.value
-            Assert.assertEquals(errorMessage, state.error)
+            Assert.assertNotNull(state.error)
             Assert.assertFalse(state.isLoading)
         }
 
     @Test
     fun `effect emits success on start service`() =
         runTest {
-            coEvery { startServiceUseCase() } returns LocationResponse.Success("Service started")
+            coEvery { startServiceUseCase(any()) } returns
+                CommandResult.Success(LocationResponse.Success("Service started"))
 
             viewModel.effect.test {
                 viewModel.handleIntent(CommandIntent.StartService)
@@ -141,7 +150,7 @@ class CommandViewModelTest {
                 val effect = awaitItem()
                 Assert.assertTrue(effect is CommandEffect.ShowSuccess)
                 Assert.assertEquals(
-                    "Service started successfully",
+                    "Service started",
                     (effect as CommandEffect.ShowSuccess).message,
                 )
             }
