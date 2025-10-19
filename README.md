@@ -210,19 +210,46 @@ AndroidcodeChallengeInterApp/
 │           │           └── LocationCollectionServiceTest.kt
 │           └── build.gradle.kts
 │
-├── protocol/
-│   ├── src/main/kotlin/dev/abbasian/protocol/
-│   │   ├── domain/
-│   │   │   ├── model/
-│   │   │   │   ├── LocationCommand.kt
-│   │   │   │   ├── LocationData.kt
-│   │   │   │   └── LocationResponse.kt
-│   │   │   └── logger/
-│   │   │       └── AppLogger.kt
-│   │   └── data/
-│   │       └── constants/
-│   │           └── ProtocolConstants.kt
-│   └── build.gradle.kts
+├── shared/
+│   ├── debug/
+│   │   ├── src/main/
+│   │   │   ├── kotlin/dev/shared/debug/
+│   │   │   │   ├── presentation/
+│   │   │   │   │   ├── components/
+│   │   │   │   │   │   ├── EventsTab.kt
+│   │   │   │   │   │   ├── ExportDialog.kt
+│   │   │   │   │   │   ├── MetricsTab.kt
+│   │   │   │   │   │   └── SummaryTab.kt
+│   │   │   │   │   └── DebugActivity.kt
+│   │   │   │   └── ui/theme/
+│   │   │   │       └── DebugTheme.kt
+│   │   │   └── res/
+│   │   └── build.gradle.kts
+│   │      
+│   └── protocol/
+│       ├── src/main/
+│       │   ├── kotlin/dev/abbasian/protocol/
+│       │   │   ├── analytics/
+│       │   │   │   ├── AnalyticsEvent.kt
+│       │   │   │   └── PerformanceMetric.kt
+│       │   │   ├── data/
+│       │   │   │   ├── analytics/
+│       │   │   │   │   ├── AnalyticsLogger.kt
+│       │   │   │   │   └── MockAnalyticsService.kt
+│       │   │   │   └── constants/
+│       │   │   │       └── ProtocolConstants.kt
+│       │   │   └── domain/
+│       │   │       ├── analytics/
+│       │   │       │   └── IAnalyticsService.kt
+│       │   │       ├── logger/
+│       │   │       │   └── AppLogger.kt
+│       │   │       └── model/
+│       │   │           ├── CommandResult.kt
+│       │   │           ├── LocationCommand.kt
+│       │   │           ├── LocationData.kt
+│       │   │           └── LocationResponse.kt
+│       │   └── res/   
+│       └── build.gradle.kts
 │
 ├── settings.gradle.kts
 └── README.md
